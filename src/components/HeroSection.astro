@@ -12,6 +12,153 @@ import StreamCanvas from './StreamCanvas.astro';
       <!-- 粒子流动特效区域 -->
       <div class="canvas-wrapper">
         <StreamCanvas />
+        <!-- Mask 遮罩层：基准线左侧透明，右侧可见内容 -->
+        <div class="particle-mask" data-position="right">
+          <div class="particle-scroller" style="--gap: 300;">
+            <!-- 解密状态卡片容器 -->
+            <div class="card-decrypted">
+              <!-- 紫色信用卡 -->
+              <div class="payment-card" data-variant="purple">
+                <!-- Visa Logo -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
+                  <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
+                </svg>
+                <!-- RFID Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 23" class="card-rfid">
+                  <path fill="currentColor" fill-rule="evenodd" d="M2.286 11.714a14 14 0 003.565 9.334A1 1 0 114.36 22.38a16 16 0 010-21.333A1 1 0 115.85 2.38a14 14 0 00-3.564 9.333z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M7.286 11.714a9 9 0 002.572 6.3 1 1 0 11-1.428 1.4 11 11 0 010-15.4 1 1 0 111.428 1.4 9 9 0 00-2.572 6.3z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M12.285 11.714a4 4 0 001.143 2.8 1 1 0 01-1.428 1.4 6 6 0 010-8.4 1 1 0 111.428 1.4 4 4 0 00-1.143 2.8z" clip-rule="evenodd"></path>
+                </svg>
+                <!-- EMV Chip -->
+                <div class="card-chip"></div>
+                <!-- Evervault Logo -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 201 219" class="card-logo">
+                  <path fill="#fff" fill-rule="evenodd" d="M7.84 28.668a15.058 15.058 0 00-7.79 11.94c-.028-.381-.045-.765-.05-1.15v48.546c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l9.028 2.956-14.39 7.854a15.06 15.06 0 00-7.79 11.939c-.029-.381-.045-.765-.05-1.15v48.547c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l79.84 26.145a38.174 38.174 0 0025.098 0l79.84-26.145a19.172 19.172 0 0013.152-16.797c.027.313.044.627.051.943v-48.547c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94l-14.391-7.853 9.028-2.956A19.172 19.172 0 00200.95 87.06c.027.313.044.627.051.943V39.458c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94L115.426 2.412a38.174 38.174 0 00-25.098 0L7.839 28.668h.001z" clip-rule="evenodd"></path>
+                </svg>
+                <!-- Card Number -->
+                <div class="card-number">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>4242</span>
+                </div>
+              </div>
+
+              <!-- 蓝色信用卡 -->
+              <div class="payment-card" data-variant="blue">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
+                  <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 23" class="card-rfid">
+                  <path fill="currentColor" fill-rule="evenodd" d="M2.286 11.714a14 14 0 003.565 9.334A1 1 0 114.36 22.38a16 16 0 010-21.333A1 1 0 115.85 2.38a14 14 0 00-3.564 9.333z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M7.286 11.714a9 9 0 002.572 6.3 1 1 0 11-1.428 1.4 11 11 0 010-15.4 1 1 0 111.428 1.4 9 9 0 00-2.572 6.3z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M12.285 11.714a4 4 0 001.143 2.8 1 1 0 01-1.428 1.4 6 6 0 010-8.4 1 1 0 111.428 1.4 4 4 0 00-1.143 2.8z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-chip"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 201 219" class="card-logo">
+                  <path fill="#fff" fill-rule="evenodd" d="M7.84 28.668a15.058 15.058 0 00-7.79 11.94c-.028-.381-.045-.765-.05-1.15v48.546c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l9.028 2.956-14.39 7.854a15.06 15.06 0 00-7.79 11.939c-.029-.381-.045-.765-.05-1.15v48.547c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l79.84 26.145a38.174 38.174 0 0025.098 0l79.84-26.145a19.172 19.172 0 0013.152-16.797c.027.313.044.627.051.943v-48.547c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94l-14.391-7.853 9.028-2.956A19.172 19.172 0 00200.95 87.06c.027.313.044.627.051.943V39.458c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94L115.426 2.412a38.174 38.174 0 00-25.098 0L7.839 28.668h.001z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-number">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>4242</span>
+                </div>
+              </div>
+
+              <!-- 粉色信用卡 -->
+              <div class="payment-card" data-variant="pink">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
+                  <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 23" class="card-rfid">
+                  <path fill="currentColor" fill-rule="evenodd" d="M2.286 11.714a14 14 0 003.565 9.334A1 1 0 114.36 22.38a16 16 0 010-21.333A1 1 0 115.85 2.38a14 14 0 00-3.564 9.333z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M7.286 11.714a9 9 0 002.572 6.3 1 1 0 11-1.428 1.4 11 11 0 010-15.4 1 1 0 111.428 1.4 9 9 0 00-2.572 6.3z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M12.285 11.714a4 4 0 001.143 2.8 1 1 0 01-1.428 1.4 6 6 0 010-8.4 1 1 0 111.428 1.4 4 4 0 00-1.143 2.8z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-chip"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 201 219" class="card-logo">
+                  <path fill="#fff" fill-rule="evenodd" d="M7.84 28.668a15.058 15.058 0 00-7.79 11.94c-.028-.381-.045-.765-.05-1.15v48.546c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l9.028 2.956-14.39 7.854a15.06 15.06 0 00-7.79 11.939c-.029-.381-.045-.765-.05-1.15v48.547c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l79.84 26.145a38.174 38.174 0 0025.098 0l79.84-26.145a19.172 19.172 0 0013.152-16.797c.027.313.044.627.051.943v-48.547c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94l-14.391-7.853 9.028-2.956A19.172 19.172 0 00200.95 87.06c.027.313.044.627.051.943V39.458c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94L115.426 2.412a38.174 38.174 0 00-25.098 0L7.839 28.668h.001z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-number">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>4242</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 解密状态卡片容器 - 第二组（复制用于无缝循环） -->
+            <div class="card-decrypted" aria-hidden="true">
+              <!-- 紫色信用卡 -->
+              <div class="payment-card" data-variant="purple">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
+                  <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 23" class="card-rfid">
+                  <path fill="currentColor" fill-rule="evenodd" d="M2.286 11.714a14 14 0 003.565 9.334A1 1 0 114.36 22.38a16 16 0 010-21.333A1 1 0 115.85 2.38a14 14 0 00-3.564 9.333z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M7.286 11.714a9 9 0 002.572 6.3 1 1 0 11-1.428 1.4 11 11 0 010-15.4 1 1 0 111.428 1.4 9 9 0 00-2.572 6.3z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M12.285 11.714a4 4 0 001.143 2.8 1 1 0 01-1.428 1.4 6 6 0 010-8.4 1 1 0 111.428 1.4 4 4 0 00-1.143 2.8z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-chip"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 201 219" class="card-logo">
+                  <path fill="#fff" fill-rule="evenodd" d="M7.84 28.668a15.058 15.058 0 00-7.79 11.94c-.028-.381-.045-.765-.05-1.15v48.546c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l9.028 2.956-14.39 7.854a15.06 15.06 0 00-7.79 11.939c-.029-.381-.045-.765-.05-1.15v48.547c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l79.84 26.145a38.174 38.174 0 0025.098 0l79.84-26.145a19.172 19.172 0 0013.152-16.797c.027.313.044.627.051.943v-48.547c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94l-14.391-7.853 9.028-2.956A19.172 19.172 0 00200.95 87.06c.027.313.044.627.051.943V39.458c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94L115.426 2.412a38.174 38.174 0 00-25.098 0L7.839 28.668h.001z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-number">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>4242</span>
+                </div>
+              </div>
+
+              <!-- 蓝色信用卡 -->
+              <div class="payment-card" data-variant="blue">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
+                  <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 23" class="card-rfid">
+                  <path fill="currentColor" fill-rule="evenodd" d="M2.286 11.714a14 14 0 003.565 9.334A1 1 0 114.36 22.38a16 16 0 010-21.333A1 1 0 115.85 2.38a14 14 0 00-3.564 9.333z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M7.286 11.714a9 9 0 002.572 6.3 1 1 0 11-1.428 1.4 11 11 0 010-15.4 1 1 0 111.428 1.4 9 9 0 00-2.572 6.3z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M12.285 11.714a4 4 0 001.143 2.8 1 1 0 01-1.428 1.4 6 6 0 010-8.4 1 1 0 111.428 1.4 4 4 0 00-1.143 2.8z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-chip"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 201 219" class="card-logo">
+                  <path fill="#fff" fill-rule="evenodd" d="M7.84 28.668a15.058 15.058 0 00-7.79 11.94c-.028-.381-.045-.765-.05-1.15v48.546c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l9.028 2.956-14.39 7.854a15.06 15.06 0 00-7.79 11.939c-.029-.381-.045-.765-.05-1.15v48.547c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l79.84 26.145a38.174 38.174 0 0025.098 0l79.84-26.145a19.172 19.172 0 0013.152-16.797c.027.313.044.627.051.943v-48.547c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94l-14.391-7.853 9.028-2.956A19.172 19.172 0 00200.95 87.06c.027.313.044.627.051.943V39.458c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94L115.426 2.412a38.174 38.174 0 00-25.098 0L7.839 28.668h.001z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-number">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>4242</span>
+                </div>
+              </div>
+
+              <!-- 粉色信用卡 -->
+              <div class="payment-card" data-variant="pink">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="card-brand">
+                  <path fill="currentColor" d="M16.539 9.186a4.155 4.155 0 00-1.451-.251c-1.6 0-2.73.806-2.738 1.963-.01.85.803 1.329 1.418 1.613.631.292.842.476.84.737-.004.397-.504.577-.969.577-.639 0-.988-.089-1.525-.312l-.199-.093-.227 1.332c.389.162 1.09.301 1.814.313 1.701 0 2.813-.801 2.826-2.032.014-.679-.426-1.192-1.352-1.616-.563-.275-.912-.459-.912-.738 0-.247.299-.511.924-.511a2.95 2.95 0 011.213.229l.15.067.227-1.287-.039.009zm4.152-.143h-1.25c-.389 0-.682.107-.852.493l-2.404 5.446h1.701l.34-.893 2.076.002c.049.209.199.891.199.891h1.5l-1.31-5.939zm-10.642-.05h1.621l-1.014 5.942H9.037l1.012-5.944v.002zm-4.115 3.275l.168.825 1.584-4.05h1.717l-2.551 5.931H5.139l-1.4-5.022a.339.339 0 00-.149-.199 6.948 6.948 0 00-1.592-.589l.022-.125h2.609c.354.014.639.125.734.503l.57 2.729v-.003zm12.757.606l.646-1.662c-.008.018.133-.343.215-.566l.111.513.375 1.714H18.69v.001h.001z"></path>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 23" class="card-rfid">
+                  <path fill="currentColor" fill-rule="evenodd" d="M2.286 11.714a14 14 0 003.565 9.334A1 1 0 114.36 22.38a16 16 0 010-21.333A1 1 0 115.85 2.38a14 14 0 00-3.564 9.333z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M7.286 11.714a9 9 0 002.572 6.3 1 1 0 11-1.428 1.4 11 11 0 010-15.4 1 1 0 111.428 1.4 9 9 0 00-2.572 6.3z" clip-rule="evenodd"></path>
+                  <path fill="currentColor" fill-rule="evenodd" d="M12.285 11.714a4 4 0 001.143 2.8 1 1 0 01-1.428 1.4 6 6 0 010-8.4 1 1 0 111.428 1.4 4 4 0 00-1.143 2.8z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-chip"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 201 219" class="card-logo">
+                  <path fill="#fff" fill-rule="evenodd" d="M7.84 28.668a15.058 15.058 0 00-7.79 11.94c-.028-.381-.045-.765-.05-1.15v48.546c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l9.028 2.956-14.39 7.854a15.06 15.06 0 00-7.79 11.939c-.029-.381-.045-.765-.05-1.15v48.547c.007-.316.024-.63.05-.943a19.172 19.172 0 0013.153 16.797l79.84 26.145a38.174 38.174 0 0025.098 0l79.84-26.145a19.172 19.172 0 0013.152-16.797c.027.313.044.627.051.943v-48.547c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94l-14.391-7.853 9.028-2.956A19.172 19.172 0 00200.95 87.06c.027.313.044.627.051.943V39.458c-.005.385-.021.769-.05 1.15a15.06 15.06 0 00-7.79-11.94L115.426 2.412a38.174 38.174 0 00-25.098 0L7.839 28.668h.001z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="card-number">
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>••••</span>
+                  <span>4242</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       
       <!-- 标题文案区域 -->
@@ -74,11 +221,175 @@ import StreamCanvas from './StreamCanvas.astro';
   }
 
   .canvas-wrapper {
+    position: relative;
     width: calc(100vw - 5rem); /* 铺满卡片宽度 */
     max-width: none;
     display: flex;
     justify-content: center;
     margin-bottom: 0.5rem;
+  }
+
+  .particle-mask {
+    z-index: 2;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* 基准线左侧裁剪（右侧50%显示） */
+  .particle-mask[data-position="left"] {
+    clip-path: inset(0 0 0 50%);
+  }
+
+  /* 基准线右侧裁剪（左侧显示） */
+  .particle-mask[data-position="right"] {
+    clip-path: inset(0 calc(50% - 5px) 0 0);
+  }
+
+  .particle-scroller {
+    gap: calc(var(--gap) * 1px);
+    flex-shrink: 0;
+    justify-content: flex-start;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+    /* 从第二组卡片开始 */
+    animation: carousel-scroll-right 30s linear infinite;
+  }
+
+  @keyframes carousel-scroll-right {
+    from {
+      /* 从第二组卡片位置开始（向左偏移一组的宽度） */
+      transform: translateX(-1290px);
+    }
+    to {
+      /* 向右移动到第一组卡片位置 */
+      transform: translateX(0);
+    }
+  }
+
+  /* 卡片容器 */
+  .card-decrypted {
+    display: flex;
+    gap: 90px;
+    align-items: center;
+    height: 100%;
+    padding: 0 60px;
+  }
+
+  /* 支付卡片样式 */
+  .payment-card {
+    position: relative;
+    width: 340px;
+    height: 214px;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    pointer-events: all;
+    flex-shrink: 0;
+  }
+
+  /* 紫色卡片 */
+  .payment-card[data-variant="purple"] {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(99, 102, 241, 0.9) 100%);
+  }
+
+  /* 蓝色卡片 */
+  .payment-card[data-variant="blue"] {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%);
+  }
+
+  /* 粉色卡片 */
+  .payment-card[data-variant="pink"] {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%);
+  }
+
+  /* Visa Logo */
+  .card-brand {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 60px;
+    height: auto;
+    color: white;
+  }
+
+  /* RFID Icon */
+  .card-rfid {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    width: 24px;
+    height: auto;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* EMV Chip */
+  .card-chip {
+    position: absolute;
+    top: 80px;
+    left: 24px;
+    width: 50px;
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f0d98c 0%, #d4af37 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-chip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 30px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 20%,
+      rgba(0, 0, 0, 0.05) 20%,
+      rgba(0, 0, 0, 0.05) 40%,
+      transparent 40%,
+      transparent 60%,
+      rgba(0, 0, 0, 0.05) 60%,
+      rgba(0, 0, 0, 0.05) 80%,
+      transparent 80%
+    );
+  }
+
+  /* Evervault Logo */
+  .card-logo {
+    width: 40px;
+    height: auto;
+    color: white;
+    opacity: 0.8;
+    margin-top: auto;
+  }
+
+  /* 卡号 */
+  .card-number {
+    display: flex;
+    gap: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+
+  .card-number span {
+    display: block;
   }
 
   .hero-text {
