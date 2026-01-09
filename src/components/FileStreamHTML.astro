@@ -1,0 +1,33 @@
+---
+/**
+ * FileStream 组件 - 直接使用原始 HTML
+ * 保留完整的 Next.js 动画逻辑
+ */
+---
+
+<div class="styles-module__Wsd3JG__fileStream">
+  <div class="styles-module__Wsd3JG__horizon" data-active="false" style="opacity:0">
+    <div class="styles-module__Wsd3JG__horizonLine"></div>
+    <div class="styles-module__Wsd3JG__horizonGlow"></div>
+  </div>
+  
+  <div class="styles-module__Wsd3JG__mask" data-position="right" style="opacity:0">
+    <div class="styles-module__Wsd3JG__scroller" style="--gap:300;transform:translateX(-90px)">
+      <div class="styles-module__Wsd3JG__decrypted">
+        <!-- 这里可以放卡片内容，先用简单的占位 -->
+        <div style="width:140px;height:220px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="styles-module__Wsd3JG__mask" data-position="left" style="opacity:0">
+    <div class="styles-module__Wsd3JG__scroller" style="--gap:300;transform:translateX(90px)">
+      <div class="styles-module__Wsd3JG__encrypted">
+        <div style="width:140px;height:220px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.3)"></div>
+        <div class="styles-module__Wsd3JG__chars">
+          <strong>8f2a</strong>9b3c<strong>1d4e</strong>5a6f<strong>7c8d</strong>9e0f<strong>1a2b</strong>3c4d<strong>5e6f</strong>7a8b<strong>9c0d</strong>1e2f<strong>3a4b</strong>5c6d<strong>7e8f</strong>9a0b<strong>1c2d</strong>3e4f<strong>5a6b</strong>7c8d<strong>9e0f</strong>1a2b<strong>3c4d</strong>5e6f<strong>7a8b</strong>9c0d<strong>1e2f</strong>3a4b<strong>5c6d</strong>7e8f<strong>9a0b</strong>1c2d<strong>3e4f</strong>5a6b<strong>7c8d</strong>9e0f
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

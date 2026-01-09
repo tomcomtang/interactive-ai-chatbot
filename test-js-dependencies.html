@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Dependencies Test</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/_next/static/chunks/2c783d819a16cae5.css">
+  <link rel="stylesheet" href="/_next/static/chunks/b1fbc3478347f772.css">
+  <link rel="stylesheet" href="/_next/static/chunks/8dfd1af5812db7f7.css">
+  <link rel="stylesheet" href="/_next/static/chunks/1d6390acdbec782f.css">
+  <link rel="stylesheet" href="/_next/static/chunks/eaf6f985b723211f.css">
+  
+  <style>
+    body { background: #000; color: #fff; }
+    #test-info { position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 20px; z-index: 99999; font-size: 12px; }
+    footer { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="test-info">
+    <h3>JS 加载测试</h3>
+    <div id="status">正在加载...</div>
+    <button onclick="testAnimation()">测试动画</button>
+  </div>
+
+  <!-- 从完整版逐个添加 JS，找出最小工作集合 -->
+  
+  <!-- 第1组：基础框架 (必需) -->
+  <script src="/_next/static/chunks/3ca5d1b2967f4306.js" defer></script>
+  
+  <!-- 第2组：样式模块 (可能需要) -->
+  <script src="/_next/static/chunks/98530a143c2a5202.js" defer></script>
+  
+  <!-- 第3组：核心逻辑 (逐个测试) -->
+  <script src="/_next/static/chunks/1042aebae4ac375a.js" defer></script>
+  <script src="/_next/static/chunks/f46d149bedf07a41.js" defer></script>
+  <script src="/_next/static/chunks/d50345d992e5ec0d.js" defer></script>
+  <script src="/_next/static/chunks/c9aa126dd6e5156b.js" defer></script>
+  <script src="/_next/static/chunks/d2574fbf3d713738.js" defer></script>
+  
+  <!-- 第4组：动画相关 -->
+  <script src="/_next/static/chunks/1ea26b574449753a.js" defer></script>
+  <script src="/_next/static/chunks/49b97cf077730aa0.js" defer></script>
+  <script src="/_next/static/chunks/99c5715b0fb2fdb5.js" defer></script>
+  <script src="/_next/static/chunks/5a3a5f466e3296fd.js" defer></script>
+  <script src="/_next/static/chunks/6dfbca0234f0a2ee.js" defer></script>
+  
+  <!-- 第5组：更多逻辑 -->
+  <script src="/_next/static/chunks/0a667f32147c2f23.js" defer></script>
+  <script src="/_next/static/chunks/334538a8c4ef4460.js" defer></script>
+  
+  <!-- 第6组：Turbopack 运行时 -->
+  <script src="/_next/static/chunks/turbopack-dad76b8f4ba2a4c0.js" defer></script>
+  
+  <!-- 第7组：更多组件 -->
+  <script src="/_next/static/chunks/78516f2fa7350755.js" defer></script>
+  <script src="/_next/static/chunks/c99b013854fab28b.js" defer></script>
+  <script src="/_next/static/chunks/bf0071f34e2c704d.js" defer></script>
+  <script src="/_next/static/chunks/49004a249076dd9b.js" defer></script>
+  <script src="/_next/static/chunks/8572fc71feb2ae0c.js" defer></script>
+  <script src="/_next/static/chunks/74b475a194eb1e62.js" defer></script>
+  <script src="/_next/static/chunks/a471bcd3e6562fe9.js" defer></script>
+  <script src="/_next/static/chunks/f5fa03e4e5d404a6.js" defer></script>
+  <script src="/_next/static/chunks/efd11aca6452ba18.js" defer></script>
+  <script src="/_next/static/chunks/edd1a01ce04cbe87.js" defer></script>
+  <script src="/_next/static/chunks/68354345f82857bd.js" defer></script>
+  <script src="/_next/static/chunks/6d64ffb419a65fae.js" defer></script>
+  <script src="/_next/static/chunks/eb72a2cf237c2694.js" defer></script>
+  <script src="/_next/static/chunks/turbopack-6f1230f2184e2a09.js" defer></script>
+  
+  <script>
+    function testAnimation() {
+      const canvas = document.querySelector('canvas');
+      const status = document.getElementById('status');
+      if (canvas) {
+        status.innerHTML = '✅ Canvas 找到！<br>检查动画...<br>' + 
+          'Canvas 数量: ' + document.querySelectorAll('canvas').length;
+      } else {
+        status.innerHTML = '❌ 没有找到 Canvas<br>可能缺少关键 JS';
+      }
+    }
+    
+    setTimeout(testAnimation, 3000);
+  </script>
+</body>
+</html>

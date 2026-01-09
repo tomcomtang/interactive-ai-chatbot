@@ -1,0 +1,41 @@
+---
+/**
+ * Evervault Hero Section
+ * 包含品牌标题、副标题和 FileStream 动画
+ */
+import FileStreamHTML from './FileStreamHTML.astro';
+---
+
+<header class="GradientHero-module__IiXtLW__hero">
+  <div class="GradientHero-module__IiXtLW__gradient" data-id="gradient">
+    <div class="GradientHero-module__IiXtLW__content" data-id="content">
+      <div class="styles-module__5okTRa__content">
+        <h1 class="styles-module__5okTRa__title">Flexible Payments Security</h1>
+        <h2 class="styles-module__5okTRa__subtitle">Maximum protection, minimum compliance burden</h2>
+        <p class="styles-module__5okTRa__text">
+          Take control of your payments stack — easily tokenize cards, optimize margins, 
+          comply with PCI, avoid gateway lock-in, or spin-up card issuing programs.
+        </p>
+        <a 
+          class="Button-module__8cr-Ka__container" 
+          href="/contact" 
+          data-size="large" 
+          data-type="primary" 
+          data-pulse="false" 
+          tabindex="0"
+        >
+          Talk to an Expert
+          <svg width="10" height="10" viewBox="0 0 10 10" class="styles-module__ns-flW__arrow" aria-hidden="true">
+            <path d="M0 5h7" class="styles-module__ns-flW__line"></path>
+            <path d="M1 1l4 4-4 4" class="styles-module__ns-flW__chevron"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+    
+    <div class="GradientHero-module__IiXtLW__background" style="opacity:0">
+      <!-- FileStream HTML 组件（使用原始 CSS 类名） -->
+      <FileStreamHTML />
+    </div>
+  </div>
+</header>

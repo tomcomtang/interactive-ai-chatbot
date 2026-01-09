@@ -1,0 +1,47 @@
+---
+/**
+ * A2UI 电商助手 - 最小化版本
+ * 
+ * 测试：只加载原始 HTML，所有处理都在客户端完成
+ */
+
+import {
+  loadEvervaultHTML,
+  extractHeadContent,
+  extractBodyContent,
+  replaceText,
+} from '../utils/evervault-loader';
+import A2UIChat from '../components/A2UIChat.astro';
+import '../styles/a2ui-chat.css';
+
+// 加载 Evervault HTML
+const evervaultHtml = loadEvervaultHTML();
+const headContent = extractHeadContent(evervaultHtml);
+let bodyContent = extractBodyContent(evervaultHtml);
+
+// 只做品牌替换，其他清理都交给客户端
+bodyContent = replaceText(bodyContent, /Evervault/g, 'EdgeOne');
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgeOne - A2UI 电商助手（最小化版本）</title>
+  
+  <!-- Evervault 原始资源（CSS + JS） -->
+  <Fragment set:html={headContent} />
+</head>
+
+<body>
+  <!-- Evervault 完整页面内容 -->
+  <Fragment set:html={bodyContent} />
+
+  <!-- A2UI 聊天组件 -->
+  <A2UIChat />
+
+  <!-- A2UI 聊天逻辑（会自动清理不需要的元素） -->
+  <script src="../scripts/a2ui-chat.js"></script>
+</body>
+</html>

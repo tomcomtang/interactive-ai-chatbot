@@ -1,0 +1,143 @@
+---
+/**
+ * A2UI 电商助手 - 半重构版本
+ * 
+ * 策略：
+ * 1. 保留原始 HTML 的 body 内容（确保 JS 动画正常工作）
+ * 2. 只提取 Header 部分到独立的 slot
+ * 3. 隐藏不需要的元素
+ * 4. 叠加 A2UI 聊天组件
+ */
+
+import fs from 'fs';
+import path from 'path';
+import A2UIChat from '../components/A2UIChat.astro';
+import '../styles/a2ui-chat.css';
+
+// 读取 Evervault 的原始 HTML
+const evervaultHtml = fs.readFileSync(
+  path.join(process.cwd(), 'public/index.html'),
+  'utf-8'
+);
+
+// 提取 head 内容
+const headMatch = evervaultHtml.match(/<head[^>]*>([\s\S]*)<\/head>/i);
+const headContent = headMatch ? headMatch[1] : '';
+
+// 提取 body 内容
+const bodyMatch = evervaultHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+let bodyContent = bodyMatch ? bodyMatch[1] : '';
+
+// 修改品牌名称
+bodyContent = bodyContent.replace(/Evervault/g, 'EdgeOne');
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Evervault 原始 head 内容 -->
+  <Fragment set:html={headContent} />
+  
+  <style>
+    /* 隐藏不需要的元素 */
+    [class*="styles-module__uOGawG__wrapper"],
+    [class*="styles-module__Rkd4lW__banner"] {
+      display: none !important;
+    }
+    
+    /* 隐藏 main 下除了 header 之外的所有直接子元素 */
+    main > *:not(header) {
+      display: none !important;
+    }
+    
+    /* Header 背景透明 */
+    .Header-module__arFiJq__header {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border-bottom: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Evervault 原始页面内容（保留所有 JS 逻辑） -->
+  <Fragment set:html={bodyContent} />
+
+  <!-- A2UI 聊天组件 -->
+  <A2UIChat />
+
+  <!-- A2UI 聊天逻辑 + 清理脚本 -->
+  <script>
+    (function() {
+      // 删除不需要的元素
+      function removeUnwantedElements() {
+        const selectors = [
+          '[class*="styles-module__uOGawG__wrapper"]',
+          '[class*="styles-module__Rkd4lW__banner"]'
+        ];
+        
+        selectors.forEach(selector => {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => el.remove());
+        });
+      }
+      
+      // 强制删除 main 下除了 header 之外的所有直接子元素
+      function cleanMainElement() {
+        const main = document.querySelector('main.Layout-module__fmZ1UG__main');
+        if (main) {
+          const children = Array.from(main.children);
+          children.forEach(child => {
+            if (child.tagName.toLowerCase() !== 'header') {
+              child.remove();
+            }
+          });
+        }
+      }
+      
+      // 修改 Header 样式
+      function customizeHeader() {
+        const header = document.querySelector('.Header-module__arFiJq__header');
+        if (header) {
+          header.style.background = 'transparent';
+          header.style.backdropFilter = 'none';
+          header.style.borderBottom = 'none';
+        }
+      }
+      
+      // 页面加载后执行
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          removeUnwantedElements();
+          cleanMainElement();
+          customizeHeader();
+        });
+      } else {
+        removeUnwantedElements();
+        cleanMainElement();
+        customizeHeader();
+      }
+      
+      // 监听动态加载的元素
+      const observer = new MutationObserver(() => {
+        removeUnwantedElements();
+        cleanMainElement();
+        customizeHeader();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      
+      // 每隔 100ms 强制清理一次
+      setInterval(() => {
+        cleanMainElement();
+        customizeHeader();
+      }, 100);
+    })();
+  </script>
+  
+  <!-- A2UI 聊天逻辑 -->
+  <script src="../scripts/a2ui-chat.js"></script>
+</body>
+</html>

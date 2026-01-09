@@ -1,0 +1,49 @@
+---
+/**
+ * EvervaultHeader 组件
+ * 
+ * EdgeOne 页面的顶部导航栏
+ */
+
+interface Props {
+  brandName?: string;  // 预留：未来可能支持品牌名称替换
+}
+
+const { brandName = 'EdgeOne' } = Astro.props;
+---
+
+<!-- EdgeOne Page Header (Navigation Bar) -->
+<header style="--offset: 0" class="Header-module__arFiJq__header" data-light-theme="false">
+  <img src="/images/logo-white.svg" class="Header-module__arFiJq__logo" />
+  <img src="/images/icon-white.svg" class="Header-module__arFiJq__logoMobile" />
+  <div class="Header-module__arFiJq__group">
+    <a
+      class="Button-module__8cr-Ka__container"
+      href="https://app.evervault.com/login"
+      data-size="regular"
+      data-type="transparent"
+      data-pulse="false"
+      tabindex="0"
+    >
+      Log in
+    </a>
+    <a
+      class="Button-module__8cr-Ka__container"
+      href="/contact"
+      data-size="regular"
+      data-type="primary"
+      data-pulse="false"
+      tabindex="0"
+    >
+      Talk to an Expert
+    </a>
+    <button class="Header-module__arFiJq__hamburger">
+      <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+        <path d="M0 1H14" stroke="white"></path>
+        <path d="M0 6H14" stroke="white"></path>
+        <path d="M0 11H14" stroke="white"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+

@@ -4,6 +4,12 @@
   display: none !important;
 }
 
+/* 隐藏 Footer */
+footer[class*="Footer-module"],
+[class*="Footer-module__rnk_JG__footer"] {
+  display: none !important;
+}
+
 /* 隐藏 main 下除了 header 之外的所有直接子元素 */
 main > *:not(header) {
   display: none !important;

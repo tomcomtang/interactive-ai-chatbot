@@ -1,0 +1,50 @@
+---
+/**
+ * Evervault 布局 - 重构自 public/index.html
+ * 保留所有原始样式和资源引用
+ */
+
+import fs from 'fs';
+import path from 'path';
+
+// 读取原始 HTML 以提取 head 内容
+const evervaultHtml = fs.readFileSync(
+  path.join(process.cwd(), 'public/index.html'),
+  'utf-8'
+);
+
+// 提取 head 中的所有资源引用
+const headMatch = evervaultHtml.match(/<head[^>]*>([\s\S]*)<\/head>/i);
+const headContent = headMatch ? headMatch[1] : '';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Evervault 原始 head 内容（CSS、字体、meta 等） -->
+  <Fragment set:html={headContent} />
+  
+  <!-- 自定义样式 -->
+  <slot name="head" />
+</head>
+
+<body>
+  <div id="__next">
+    <div class="Layout-module__fmZ1UG__layout">
+      <!-- 主内容区域 -->
+      <main class="Layout-module__fmZ1UG__main">
+        <slot />
+      </main>
+      
+      <!-- Footer 占位（如果需要） -->
+      <!-- <footer class="Footer-module__rnk_JG__footer"></footer> -->
+    </div>
+  </div>
+  
+  <!-- 自定义脚本 -->
+  <slot name="scripts" />
+</body>
+</html>

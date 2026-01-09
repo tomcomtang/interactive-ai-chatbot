@@ -1,0 +1,39 @@
+---
+/**
+ * A2UI 电商助手 - 精简版测试
+ * 
+ * 只加载首屏必需的 JS
+ */
+
+import EvervaultHeadMinimal from '../components/EvervaultHeadMinimal.astro';
+import EvervaultHeader from '../components/EvervaultHeader.astro';
+import EvervaultBody from '../components/EvervaultBody.astro';
+import A2UIChat from '../components/A2UIChat.astro';
+import '../styles/a2ui-chat.css';
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgeOne - A2UI 电商助手（精简版）</title>
+  
+  <!-- 精简版资源 - 只加载首屏必需的 JS -->
+  <EvervaultHeadMinimal />
+</head>
+
+<body>
+  <!-- EdgeOne 顶部导航栏 -->
+  <EvervaultHeader />
+
+  <!-- EdgeOne 页面内容 -->
+  <EvervaultBody />
+
+  <!-- A2UI 聊天组件 -->
+  <A2UIChat />
+
+  <!-- A2UI 聊天逻辑 -->
+  <script src="../scripts/a2ui-chat.js"></script>
+</body>
+</html>
