@@ -170,13 +170,46 @@ import JsonToUICanvas from './JsonToUICanvas.astro';
           Turn complex AI outputs into engaging visualizations and dynamic forms 
           that users naturally understand.
         </p>
-        <a class="cta-button Button-module__8cr-Ka__container" href="/contact" data-size="large" data-type="primary" data-pulse="false">
+        <button id="getStartedBtn" class="cta-button Button-module__8cr-Ka__container" data-size="large" data-type="primary" data-pulse="false">
           Get Started
-        </a>
+        </button>
       </div>
     </div>
   </div>
 </header>
+
+<script>
+  // Get Started 按钮交互
+  const getStartedBtn = document.getElementById('getStartedBtn');
+  
+  if (getStartedBtn) {
+    getStartedBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // 添加点击动画效果
+      getStartedBtn.style.transform = 'scale(0.95)';
+      getStartedBtn.style.transition = 'transform 0.1s ease';
+      
+      setTimeout(() => {
+        getStartedBtn.style.transform = 'scale(1)';
+        
+        // 跳转到 AI 对话页面
+        window.location.href = '/chat';
+      }, 100);
+    });
+    
+    // 添加 hover 效果增强
+    getStartedBtn.addEventListener('mouseenter', () => {
+      getStartedBtn.style.transform = 'translateY(-2px)';
+      getStartedBtn.style.boxShadow = '0 8px 24px rgba(102, 51, 238, 0.4)';
+    });
+    
+    getStartedBtn.addEventListener('mouseleave', () => {
+      getStartedBtn.style.transform = 'translateY(0)';
+      getStartedBtn.style.boxShadow = '';
+    });
+  }
+</script>
 
 <style>
   .hero-section {

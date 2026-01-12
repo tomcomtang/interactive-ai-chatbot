@@ -1,14 +1,12 @@
 ---
 /**
- * A2UI 电商助手 - 简化版本
- * 
- * 使用独立的组件：EvervaultHead、EvervaultHeader、EvervaultBody
+ * 首页 - Hero Section 展示
+ * 包含导航栏和 Hero 动画特效
  */
 
 import EvervaultHead from '../components/EvervaultHead.astro';
-import EvervaultBody from '../components/EvervaultBody.astro';
-import A2UIChat from '../components/A2UIChat.astro';
-import '../styles/a2ui-chat.css';
+import OriginalHeader from '../components/OriginalHeader.astro';
+import HeroSection from '../components/HeroSection.astro';
 ---
 
 <!DOCTYPE html>
@@ -16,13 +14,45 @@ import '../styles/a2ui-chat.css';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EdgeOne - A2UI 电商助手</title>
+  <title>A2UI - AI-Powered Interactive UI</title>
   
-  <!-- EdgeOne 原始资源（CSS + JS） -->
+  <!-- EdgeOne 原始资源（只加载 CSS） -->
   <EvervaultHead />
+  
+  <style is:global>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* 隐藏 Next.js 动态渲染的内容 */
+    #__next {
+      display: none !important;
+    }
+
+    /* 隐藏不需要的元素 */
+    [class*="styles-module__uOGawG__wrapper"],
+    [class*="styles-module__Rkd4lW__banner"],
+    [class*="styles-module__1H6L9a__navigation"],
+    footer[class*="Footer-module"] {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body>
-  <EvervaultBody />
+  <!-- 原始导航栏 -->
+  <OriginalHeader />
+
+  <!-- Hero Section -->
+  <HeroSection />
 </body>
 </html>
