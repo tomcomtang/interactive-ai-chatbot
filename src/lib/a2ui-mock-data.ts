@@ -294,21 +294,21 @@ export const productListExample = [
         {
           id: 1,
           name: 'Wireless Headphones',
-          price: 99.99,
+          price: '$99.99',
           image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
           rating: 4.5
         },
         {
           id: 2,
           name: 'Smart Watch',
-          price: 299.99,
+          price: '$299.99',
           image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop',
           rating: 4.8
         },
         {
           id: 3,
           name: 'Laptop Stand',
-          price: 49.99,
+          price: '$49.99',
           image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200&h=200&fit=crop',
           rating: 4.3
         }
@@ -328,64 +328,146 @@ export const productListExample = [
             style: { fontWeight: '600' }
           },
           {
-            type: 'List',
-            id: 'products',
-            dataBinding: '/products',
-            itemTemplate: {
-              type: 'Card',
-              id: 'product-card',
-              elevation: 1,
-              children: [
-                {
-                  type: 'Row',
-                  id: 'product-row',
-                  alignment: 'start',
-                  children: [
-                    {
-                      type: 'Image',
-                      id: 'product-image',
-                      url: '/item/image',
-                      dataBinding: '/item/image',
-                      width: '80px',
-                      height: '80px'
-                    },
-                    {
-                      type: 'Column',
-                      id: 'product-info',
-                      alignment: 'start',
-                      children: [
-                        {
-                          type: 'Text',
-                          id: 'product-name',
-                          text: '/item/name',
-                          dataBinding: '/item/name',
-                          size: 'large',
-                          style: { fontWeight: '600' }
-                        },
-                        {
-                          type: 'Text',
-                          id: 'product-price',
-                          text: '/item/price',
-                          dataBinding: '/item/price',
-                          size: 'medium',
-                          style: { color: '#6633ee', fontWeight: '500' }
-                        },
-                        {
-                          type: 'Button',
-                          id: 'add-to-cart',
-                          text: 'Add to Cart',
-                          variant: 'primary',
-                          action: {
-                            name: 'addToCart',
-                            data: { productId: '/item/id' }
-                          }
+            type: 'Row',
+            id: 'products-row',
+            alignment: 'start',
+            children: [
+              {
+                type: 'Card',
+                id: 'product-card-1',
+                elevation: 1,
+                children: [
+                  {
+                    type: 'Column',
+                    id: 'product-1-content',
+                    alignment: 'start',
+                    children: [
+                      {
+                        type: 'Image',
+                        id: 'product-image-1',
+                        url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
+                        width: '100%',
+                        height: '150px'
+                      },
+                      {
+                        type: 'Text',
+                        id: 'product-name-1',
+                        text: 'Wireless Headphones',
+                        size: 'large',
+                        style: { fontWeight: '600' }
+                      },
+                      {
+                        type: 'Text',
+                        id: 'product-price-1',
+                        text: '$99.99',
+                        size: 'medium',
+                        style: { color: '#6633ee', fontWeight: '500' }
+                      },
+                      {
+                        type: 'Button',
+                        id: 'add-to-cart-1',
+                        text: 'Add to Cart',
+                        variant: 'primary',
+                        action: {
+                          name: 'addToCart',
+                          data: { productId: 1 }
                         }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                type: 'Card',
+                id: 'product-card-2',
+                elevation: 1,
+                children: [
+                  {
+                    type: 'Column',
+                    id: 'product-2-content',
+                    alignment: 'start',
+                    children: [
+                      {
+                        type: 'Image',
+                        id: 'product-image-2',
+                        url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop',
+                        width: '100%',
+                        height: '150px'
+                      },
+                      {
+                        type: 'Text',
+                        id: 'product-name-2',
+                        text: 'Smart Watch',
+                        size: 'large',
+                        style: { fontWeight: '600' }
+                      },
+                      {
+                        type: 'Text',
+                        id: 'product-price-2',
+                        text: '$299.99',
+                        size: 'medium',
+                        style: { color: '#6633ee', fontWeight: '500' }
+                      },
+                      {
+                        type: 'Button',
+                        id: 'add-to-cart-2',
+                        text: 'Add to Cart',
+                        variant: 'primary',
+                        action: {
+                          name: 'addToCart',
+                          data: { productId: 2 }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                type: 'Card',
+                id: 'product-card-3',
+                elevation: 1,
+                children: [
+                  {
+                    type: 'Column',
+                    id: 'product-3-content',
+                    alignment: 'start',
+                    children: [
+                      {
+                        type: 'Image',
+                        id: 'product-image-3',
+                        url: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=200&h=200&fit=crop',
+                        width: '100%',
+                        height: '150px'
+                      },
+                      {
+                        type: 'Text',
+                        id: 'product-name-3',
+                        text: 'Laptop Stand',
+                        size: 'large',
+                        style: { fontWeight: '600' }
+                      },
+                      {
+                        type: 'Text',
+                        id: 'product-price-3',
+                        text: '$49.99',
+                        size: 'medium',
+                        style: { color: '#6633ee', fontWeight: '500' }
+                      },
+                      {
+                        type: 'Button',
+                        id: 'add-to-cart-3',
+                        text: 'Add to Cart',
+                        variant: 'primary',
+                        action: {
+                          name: 'addToCart',
+                          data: { productId: 3 }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

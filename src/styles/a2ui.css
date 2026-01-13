@@ -80,8 +80,18 @@
 .a2ui-row {
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 16px;
   align-items: flex-start;
+  width: 100%; /* 确保Row占满宽度 */
+}
+
+/* Row中的Card等宽分配 - 智能平均分配空间 */
+.a2ui-row > .a2ui-card {
+  flex: 1 1 0; /* 强制等分 */
+  min-width: 0; /* 允许收缩 */
+  width: calc((100% - 32px) / 3); /* 手动计算宽度：总宽度减去2个gap(16px*2)再除以3 */
+  box-sizing: border-box; /* 确保padding不影响宽度计算 */
 }
 
 .a2ui-row.align-start {
@@ -204,9 +214,9 @@
 
 /* Button */
 .a2ui-button {
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 14px;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -400,6 +410,13 @@ textarea.a2ui-textfield-input {
 /* 确保 A2UI 组件在消息容器内正确显示 */
 .a2ui-message-content .a2ui-surface {
   margin: 0;
+  width: 100%;
+}
+
+/* 确保Column和Row组件充分利用宽度 */
+.a2ui-message-content .a2ui-column,
+.a2ui-message-content .a2ui-row {
+  width: 100%;
 }
 
 /* ============= 响应式 ============= */
@@ -425,8 +442,15 @@ textarea.a2ui-textfield-input {
 
   .a2ui-row,
   .a2ui-column {
-    gap: 10px;
+    gap: 12px;
   }
+
+  /* 平板端：2个卡片一行 */
+  .a2ui-row > .a2ui-card {
+    flex: 1 1 calc(50% - 8px);
+    min-width: calc(50% - 8px);
+  }
+}
 
   .a2ui-list {
     gap: 10px;
@@ -445,11 +469,20 @@ textarea.a2ui-textfield-input {
 
   .a2ui-row,
   .a2ui-column {
-    gap: 8px;
+    gap: 10px;
   }
 
   .a2ui-button {
     padding: 7px 14px;
+    font-size: 0.8125rem;
+  }
+
+  /* 小屏幕：单列显示 */
+  .a2ui-row > .a2ui-card {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+}
     font-size: 0.8125rem;
   }
 }
