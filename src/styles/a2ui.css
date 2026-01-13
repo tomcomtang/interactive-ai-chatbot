@@ -1,0 +1,455 @@
+/**
+ * A2UI 组件样式 - 与 Chat UI 风格统一
+ * 玻璃拟态效果 + 紫色调 + 暗色背景
+ */
+
+/* Surface 容器 */
+.a2ui-surface {
+  width: 100%;
+  animation: surfaceFadeIn 0.3s ease;
+}
+
+@keyframes surfaceFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============= 基础组件 ============= */
+
+/* Text */
+.a2ui-text {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  margin: 0;
+  font-family: inherit;
+}
+
+.a2ui-text.text-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.a2ui-text.text-medium {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.a2ui-text.text-large {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.a2ui-text.text-extraLarge {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+/* Image */
+.a2ui-image {
+  display: block;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Divider */
+.a2ui-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+}
+
+.a2ui-divider.divider-vertical {
+  width: 1px;
+  height: 100%;
+  border-top: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0 8px;
+}
+
+/* ============= 布局组件 ============= */
+
+/* Row */
+.a2ui-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.a2ui-row.align-start {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.a2ui-row.align-center {
+  justify-content: center;
+  align-items: center;
+}
+
+.a2ui-row.align-end {
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.a2ui-row.align-spaceBetween {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.a2ui-row.align-spaceAround {
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* Column */
+.a2ui-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.a2ui-column.align-start {
+  align-items: flex-start;
+}
+
+.a2ui-column.align-center {
+  align-items: center;
+}
+
+.a2ui-column.align-end {
+  align-items: flex-end;
+}
+
+.a2ui-column.align-spaceBetween {
+  justify-content: space-between;
+}
+
+.a2ui-column.align-spaceAround {
+  justify-content: space-around;
+}
+
+/* List */
+.a2ui-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+/* 自定义滚动条 - 与 Chat 风格一致 */
+.a2ui-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.a2ui-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.a2ui-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.a2ui-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Card */
+.a2ui-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.a2ui-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.a2ui-card.elevation-0 {
+  box-shadow: none;
+}
+
+.a2ui-card.elevation-1 {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.a2ui-card.elevation-2 {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.a2ui-card.elevation-3 {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.a2ui-card.elevation-4 {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+/* ============= 交互组件 ============= */
+
+/* Button */
+.a2ui-button {
+  padding: 10px 20px;
+  border-radius: 14px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.a2ui-button.button-primary {
+  background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+  color: white;
+  border: 1px solid rgba(102, 51, 238, 0.3);
+  box-shadow: 0 2px 8px rgba(102, 51, 238, 0.2);
+}
+
+.a2ui-button.button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 51, 238, 0.3);
+  border-color: rgba(102, 51, 238, 0.5);
+}
+
+.a2ui-button.button-primary:active {
+  transform: translateY(0);
+}
+
+.a2ui-button.button-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.a2ui-button.button-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.a2ui-button.button-outlined {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.a2ui-button.button-outlined:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* TextField */
+.a2ui-textfield-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.a2ui-textfield-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2px;
+}
+
+.a2ui-textfield-input {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.9375rem;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 40px;
+  line-height: 1.5;
+}
+
+.a2ui-textfield-input:focus {
+  border-color: rgba(102, 51, 238, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 3px rgba(102, 51, 238, 0.08);
+}
+
+.a2ui-textfield-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+textarea.a2ui-textfield-input {
+  min-height: 80px;
+  max-height: 200px;
+}
+
+/* CheckBox */
+.a2ui-checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.a2ui-checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #6633ee;
+  border-radius: 4px;
+}
+
+.a2ui-checkbox-label {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.a2ui-checkbox-container:hover .a2ui-checkbox-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Slider */
+.a2ui-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.a2ui-slider-input {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.a2ui-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(102, 51, 238, 0.3);
+  transition: all 0.2s ease;
+}
+
+.a2ui-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 10px rgba(102, 51, 238, 0.5);
+}
+
+.a2ui-slider-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(102, 51, 238, 0.3);
+  transition: all 0.2s ease;
+}
+
+.a2ui-slider-input::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 10px rgba(102, 51, 238, 0.5);
+}
+
+.a2ui-slider-value {
+  min-width: 36px;
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============= A2UI 消息容器样式 ============= */
+
+.a2ui-message-content {
+  /* 去掉 padding，让内容和 avatar 顶部对齐 */
+  padding: 0 !important;
+}
+
+/* 确保 A2UI 组件在消息容器内正确显示 */
+.a2ui-message-content .a2ui-surface {
+  margin: 0;
+}
+
+/* ============= 响应式 ============= */
+
+@media (max-width: 768px) {
+  .a2ui-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .a2ui-button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+
+  .a2ui-text.text-extraLarge {
+    font-size: 1.25rem;
+  }
+
+  .a2ui-text.text-large {
+    font-size: 1.0625rem;
+  }
+
+  .a2ui-row,
+  .a2ui-column {
+    gap: 10px;
+  }
+
+  .a2ui-list {
+    gap: 10px;
+  }
+
+  .a2ui-textfield-input {
+    padding: 9px 12px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .a2ui-card {
+    padding: 10px;
+  }
+
+  .a2ui-row,
+  .a2ui-column {
+    gap: 8px;
+  }
+
+  .a2ui-button {
+    padding: 7px 14px;
+    font-size: 0.8125rem;
+  }
+}

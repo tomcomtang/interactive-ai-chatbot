@@ -18,11 +18,53 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   <!-- EdgeOne 原始资源（只加载 CSS） -->
   <EvervaultHead />
   
+  <!-- A2UI 样式 -->
+  <link rel="stylesheet" href="/src/styles/a2ui.css">
+  
   <style is:global>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+
+    /* 强制覆盖全局 svg vertical-align: middle */
+    .message-avatar svg {
+      vertical-align: top !important;
+    }
+
+    /* 确保 a2ui-message-content 内的第一个子元素没有 margin-top */
+    .a2ui-message-content > *:first-child {
+      margin-top: 0 !important;
+    }
+
+    /* 修复 A2UI 文本组件的顶部对齐问题 - 消除 line-height 产生的上方间隙 */
+    .a2ui-message-content .a2ui-text {
+      /* 重置 line-height 为 1，消除上下间隙 */
+      line-height: 1 !important;
+      /* 确保没有额外的 margin 和 padding */
+      margin: 0 !important;
+      padding: 0 !important;
+      /* 使用 flex 布局确保内容紧贴顶部 */
+      display: flex !important;
+      align-items: flex-start !important;
+    }
+
+    /* 针对不同大小的文本，保持 line-height: 1 */
+    .a2ui-message-content .a2ui-text.text-extraLarge {
+      line-height: 1 !important;
+    }
+
+    .a2ui-message-content .a2ui-text.text-large {
+      line-height: 1 !important;
+    }
+
+    .a2ui-message-content .a2ui-text.text-medium {
+      line-height: 1 !important;
+    }
+
+    .a2ui-message-content .a2ui-text.text-small {
+      line-height: 1 !important;
     }
 
     body {
@@ -53,38 +95,61 @@ import OriginalHeader from '../components/OriginalHeader.astro';
 
   <!-- AI 对话区域 -->
   <main class="chat-section">
-    <div class="chat-background">
-      <div class="chat-container">
-        <!-- 对话内容区域 -->
-        <div class="chat-messages" id="chatMessages">
-          <div class="welcome-message">
-            <h2>👋 Welcome to A2UI Chat</h2>
-            <p>Start a conversation with AI to create interactive UI components.</p>
+    <!-- 固定的卡片背景 - 独立层 -->
+    <div class="chat-background"></div>
+    
+    <!-- 聊天内容区域 - 独立层 -->
+    <div class="chat-container">
+      <!-- 对话内容区域 -->
+      <div class="chat-messages" id="chatMessages">
+        <div class="welcome-message">
+          <h2>👋 Welcome to A2UI Chat</h2>
+          <p>输入以下命令查看组件渲染效果：</p>
+          <div class="command-list">
+            <div class="command-item">
+              <span class="command-key">1</span>
+              <span class="command-desc">或 "用户资料" - 查看个人资料卡片</span>
+            </div>
+            <div class="command-item">
+              <span class="command-key">2</span>
+              <span class="command-desc">或 "联系表单" - 查看表单组件</span>
+            </div>
+            <div class="command-item">
+              <span class="command-key">3</span>
+              <span class="command-desc">或 "产品列表" - 查看动态列表</span>
+            </div>
+            <div class="command-item">
+              <span class="command-key">4</span>
+              <span class="command-desc">或 "设置面板" - 查看交互组件</span>
+            </div>
           </div>
         </div>
-
-        <!-- 输入区域 -->
-        <div class="chat-input-wrapper">
-          <div class="chat-input-container">
-            <textarea 
-              id="chatInput" 
-              class="chat-input" 
-              placeholder="Type your message here..."
-              rows="1"
-            ></textarea>
-            <button id="sendBtn" class="send-button">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+      </div>
+    </div>
+    
+    <!-- 固定的输入框 - 独立层 -->
+    <div class="chat-input-wrapper">
+      <div class="chat-input-container">
+        <textarea 
+          id="chatInput" 
+          class="chat-input" 
+          placeholder="Type your message here..."
+          rows="1"
+        ></textarea>
+        <button id="sendBtn" class="send-button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
       </div>
     </div>
   </main>
 </body>
 
 <script>
+  import { A2UIRenderer } from '../lib/a2ui-renderer';
+  import { allMockExamples } from '../lib/a2ui-mock-data';
+
   // 自动调整 textarea 高度
   const chatInput = document.getElementById('chatInput') as HTMLTextAreaElement;
   const sendBtn = document.getElementById('sendBtn');
@@ -124,6 +189,31 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     const message = chatInput?.value.trim();
     if (!message) return;
 
+    // 检查是否是 A2UI 命令
+    const commandMap: Record<string, keyof typeof allMockExamples> = {
+      '1': 'userProfile',
+      '用户资料': 'userProfile',
+      'user profile': 'userProfile',
+      '个人资料': 'userProfile',
+      
+      '2': 'contactForm',
+      '联系表单': 'contactForm',
+      'contact form': 'contactForm',
+      '表单': 'contactForm',
+      
+      '3': 'productList',
+      '产品列表': 'productList',
+      'product list': 'productList',
+      '商品列表': 'productList',
+      
+      '4': 'settingsPanel',
+      '设置面板': 'settingsPanel',
+      'settings panel': 'settingsPanel',
+      '设置': 'settingsPanel'
+    };
+
+    const demoType = commandMap[message.toLowerCase()];
+
     // 检查是否有欢迎消息
     const welcomeMsg = chatMessages?.querySelector('.welcome-message');
     
@@ -154,18 +244,26 @@ import OriginalHeader from '../components/OriginalHeader.astro';
           });
         }
         
-        // 模拟 AI 回复（也是隐藏状态，然后一起显示）
+        // 判断是否渲染 A2UI 或普通回复
         setTimeout(() => {
-          addMessage('This is a placeholder response. AI integration coming soon!', 'ai', false);
+          if (demoType) {
+            renderA2UIDemo(demoType);
+          } else {
+            addMessage('This is a placeholder response. AI integration coming soon!', 'ai', false);
+          }
         }, 800);
       }, 500);
     } else {
       // 没有欢迎消息，正常添加
       addMessage(message, 'user', false);
       
-      // 模拟 AI 回复
+      // 判断是否渲染 A2UI 或普通回复
       setTimeout(() => {
-        addMessage('This is a placeholder response. AI integration coming soon!', 'ai', false);
+        if (demoType) {
+          renderA2UIDemo(demoType);
+        } else {
+          addMessage('This is a placeholder response. AI integration coming soon!', 'ai', false);
+        }
       }, 1000);
     }
 
@@ -182,67 +280,164 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
     // 初始状态：不占用布局空间
-    messageDiv.style.cssText = 'display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 0.75rem; align-items: center !important; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.3s ease, max-height 0.3s ease;';
+    messageDiv.style.cssText = 'display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 0.75rem; align-items: flex-start !important; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.3s ease, max-height 0.3s ease;';
     
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
-    avatar.style.cssText = 'flex: 0 0 36px !important; width: 36px !important; height: 36px !important; border-radius: 50%; display: inline-flex !important; align-items: center !important; justify-content: center;';
+    // 不需要设置内联样式，让 CSS 控制
     
     // 添加 SVG 图标
     if (sender === 'user') {
       avatar.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4c2.5 0 4.5 2 4.5 4.5S14.5 13 12 13s-4.5-2-4.5-4.5S9.5 4 12 4zm0 10.5c3.5 0 10.5 1.75 10.5 5.25V22H1.5v-2.25c0-3.5 7-5.25 10.5-5.25z"/>
         </svg>
       `;
     } else {
       avatar.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-          <circle cx="12" cy="10" r="1.5"/>
-          <circle cx="8" cy="10" r="1.5"/>
-          <circle cx="16" cy="10" r="1.5"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
       `;
     }
     
     const content = document.createElement('div');
-    content.className = 'message-content';
-    content.textContent = text;
+    content.className = 'message-content a2ui-message-content';
+    content.style.cssText = 'flex: 1 1 auto !important; min-width: 0 !important; max-width: 100% !important; padding: 0; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; display: block !important; background: transparent; border: none;';
     
+    // 添加元素到消息容器
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(content);
+    
+    // 使用 A2UI 渲染器来渲染文本
+    const renderer = new A2UIRenderer(content);
+    
+    // 创建一个标准的A2UI消息，包裹在Card中
+    const textMessage = {
+      type: 'createSurface',
+      surfaceId: `text-${Date.now()}`,
+      components: [
+        {
+          type: 'Card',
+          id: 'message-card',
+          elevation: 1,
+          children: [
+            {
+              type: 'Text',
+              text: text,
+              size: 'medium'
+            }
+          ]
+        }
+      ]
+    };
+    
+    renderer.processMessage(textMessage);
     
     // 添加到容器
     chatMessages.appendChild(messageDiv);
     
-    // 如果不需要保持隐藏，立即显示
+    // 如果不需要保持隐藏，立即显示并滚动
     if (!keepHidden) {
+      // 先滚动到底部，确保新消息在可视区域
+      const chatContainer = document.querySelector('.chat-container');
+      if (chatContainer) {
+        // 立即滚动，避免消息显示在错误位置
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+      
       requestAnimationFrame(() => {
         messageDiv.style.opacity = '1';
         messageDiv.style.maxHeight = '200px';
+        
+        // 再次确保滚动到底部
+        if (chatContainer) {
+          setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }, 50); // 给动画一点时间
+        }
       });
     }
+  }
+
+  // ============= A2UI Demo 功能 =============
+
+  function renderA2UIDemo(demoType: keyof typeof allMockExamples) {
+    if (!chatMessages) return;
+    
+    // 添加 AI 消息容器
+    const aiMessageDiv = document.createElement('div');
+    aiMessageDiv.className = 'message ai-message';
+    aiMessageDiv.style.cssText = 'display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 0.75rem; align-items: flex-start !important; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.3s ease, max-height 0.3s ease; width: 100% !important; max-width: 100% !important;';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'message-content a2ui-message-content';
+    content.style.cssText = 'flex: 1 1 auto !important; min-width: 0 !important; max-width: 100% !important; padding: 0; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; display: block !important; background: transparent; border: none;';
+    
+    aiMessageDiv.appendChild(avatar);
+    aiMessageDiv.appendChild(content);
+    chatMessages.appendChild(aiMessageDiv);
+    
+    // 每次都创建新的渲染器实例，确保每条消息独立
+    const renderer = new A2UIRenderer(content);
+    
+    // 监听 action 事件
+    content.addEventListener('a2ui:action', ((e: CustomEvent) => {
+      console.log('A2UI Action:', e.detail);
+      alert(`Action: ${e.detail.actionName}\nData: ${JSON.stringify(e.detail.dataModel, null, 2)}`);
+    }) as EventListener);
+    
+    // 处理所有消息
+    const messages = allMockExamples[demoType];
+    messages.forEach((msg: any) => {
+      renderer.processMessage(msg);
+    });
+    
+    // 先滚动到底部，确保新消息在可视区域
+    const chatContainer = document.querySelector('.chat-container');
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    // 显示消息
+    requestAnimationFrame(() => {
+      aiMessageDiv.style.opacity = '1';
+      aiMessageDiv.style.maxHeight = 'none';
+      aiMessageDiv.style.overflow = 'visible';
+      
+      // 再次确保滚动到底部
+      if (chatContainer) {
+        setTimeout(() => {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 100); // 给A2UI组件渲染一点时间
+      }
+    });
   }
 </script>
 
 <style>
-  /* 重置可能的外部样式干扰 */
-  .chat-messages .message,
-  .chat-messages .message * {
-    all: unset;
-  }
+  /* 移除过于激进的样式重置，改为更精确的控制 */
 
   .chat-section {
-    position: relative;
+    position: fixed; /* 固定整个区域 */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     height: 100vh;
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 1rem;
-    padding-top: 40px; /* 减小顶部间隙 */
-    overflow: hidden;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden; /* 不在这里滚动 */
     /* 页面加载动画 */
     animation: pageLoadFadeIn 0.5s ease-out;
   }
@@ -257,19 +452,21 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   }
 
   .chat-background {
-    position: relative;
-    width: calc(100% - 1.5rem);
-    height: calc(90vh - 40px); /* 减去顶部间隙 */
+    position: fixed; /* 固定卡片背景 */
+    top: 80px; /* 导航栏下方 + 间隙 */
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     padding: 2rem;
-    margin: 0 0.75rem;
+    pointer-events: none; /* 让点击穿透到下层 */
+    z-index: 1; /* 最底层 */
     
-    /* 圆角渐变背景卡片 - 反转渐变方向 */
-    border-radius: 48px;
+    /* 圆角渐变背景卡片 - 保持原样式 */
+    border-radius: 56px 56px 0 0; /* 只有顶部圆角，更圆润 */
     background: radial-gradient(140% 107.13% at 50% 90%, transparent 37.41%, #6633ee 69.27%, #ffffff 100%);
-    overflow: hidden;
     /* 卡片出现动画 */
     animation: cardSlideUp 0.6s ease-out;
   }
@@ -286,13 +483,17 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   }
 
   .chat-container {
-    position: relative;
-    width: 100%;
-    max-width: 900px;
-    height: 100%;
+    position: fixed; /* 固定定位 */
+    top: 80px; /* 和卡片背景顶部对齐 */
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    align-items: center;
+    overflow-y: auto; /* 可滚动 */
+    overflow-x: hidden;
+    z-index: 50; /* 在背景之上，在输入框之下 */
     /* 内容延迟淡入 */
     animation: contentFadeIn 0.5s ease-out 0.3s both;
   }
@@ -309,31 +510,30 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   }
 
   .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
+    width: 100%;
+    max-width: 1000px; /* 内容区域宽度 */
+    padding: 2rem 1rem;
+    padding-bottom: 120px; /* 底部留出输入框空间 */
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    scroll-behavior: smooth; /* 平滑滚动 */
   }
 
-  /* 自定义滚动条 */
-  .chat-messages::-webkit-scrollbar {
+  /* 自定义滚动条 - 应用到聊天容器 */
+  .chat-container::-webkit-scrollbar {
     width: 8px;
   }
 
-  .chat-messages::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
+  .chat-container::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .chat-messages::-webkit-scrollbar-thumb {
+  .chat-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
-  .chat-messages::-webkit-scrollbar-thumb:hover {
+  .chat-container::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
   }
 
@@ -355,6 +555,52 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   .welcome-message p {
     font-size: 1.125rem;
     color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1.5rem;
+  }
+
+  .command-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .command-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    text-align: left;
+    transition: all 0.2s ease;
+  }
+
+  .command-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .command-key {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6633ee 0%, #8b5cf6 100%);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+  }
+
+  .command-desc {
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
   }
 
   .message {
@@ -362,7 +608,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     gap: 0.75rem;
-    align-items: flex-start !important;
+    align-items: center !important; /* 所有消息都居中对齐 */
     width: auto !important;
     animation: messageSlideIn 0.3s ease;
   }
@@ -379,23 +625,37 @@ import OriginalHeader from '../components/OriginalHeader.astro';
   }
 
   .message-avatar {
-    flex: 0 0 36px !important; /* 固定 36px，不伸缩 */
+    flex: 0 0 36px !important;
     width: 36px !important;
     height: 36px !important;
     border-radius: 50%;
-    display: inline-flex !important; /* 改为 inline-flex */
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    margin-top: 2px;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-self: flex-start !important;
+    /* 移除avatar容器内部间隙 */
+    line-height: 0 !important;
+    font-size: 0 !important;
+    overflow: hidden; /* 确保内容不会溢出 */
   }
 
-  .message-avatar svg {
-    width: 18px !important;
-    height: 18px !important;
+  .message-avatar svg,
+  .chat-messages .message .message-avatar svg {
+    width: 24px !important;
+    height: 24px !important;
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    vertical-align: top !important;
+    /* 移除SVG内部间隙 */
+    line-height: 0 !important;
+    font-size: 0 !important;
   }
 
   .user-message {
@@ -404,7 +664,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     flex-wrap: nowrap !important;
     justify-content: flex-start;
     margin-left: auto;
-    width: auto !important; /* 改为 auto */
+    width: auto !important;
     max-width: calc(100% - 2rem);
   }
 
@@ -421,7 +681,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     flex-wrap: nowrap !important;
     justify-content: flex-start;
     margin-right: auto;
-    width: auto !important; /* 改为 auto */
+    width: auto !important;
     max-width: calc(100% - 2rem);
   }
 
@@ -432,34 +692,37 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     color: rgba(255, 255, 255, 0.95);
   }
 
-  .message-content {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    max-width: 500px;
-    padding: 0.875rem 1.125rem;
-    border-radius: 16px;
-    line-height: 1.5;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    display: block !important;
-  }
-
-  .user-message .message-content {
-    background: rgba(102, 51, 238, 0.35);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(102, 51, 238, 0.5);
-    box-shadow: 0 2px 12px rgba(102, 51, 238, 0.2);
-  }
-
+  .user-message .message-content,
   .ai-message .message-content {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    /* 移除背景样式，让卡片自己处理 */
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  /* 用户消息的卡片样式 */
+  .user-message .a2ui-card {
+    background: rgba(102, 51, 238, 0.35) !important;
+    border: 1px solid rgba(102, 51, 238, 0.5) !important;
+    box-shadow: 0 2px 12px rgba(102, 51, 238, 0.2) !important;
+  }
+
+  /* AI消息的卡片样式 */
+  .ai-message .a2ui-card {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
 
   .chat-input-wrapper {
-    position: relative;
+    position: fixed; /* 固定输入框 */
+    bottom: 2rem; /* 往下一点 */
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
+    max-width: 1000px; /* 和聊天内容宽度一致 */
+    padding: 0 1rem;
+    z-index: 100;
   }
 
   .chat-input-container {
@@ -469,7 +732,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
     padding: 1rem;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
-    border-radius: 24px;
+    border-radius: 28px;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -531,7 +794,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
       height: calc(85vh - 30px); /* 减去顶部间隙 */
       margin: 0 0.25rem;
       padding: 1rem;
-      border-radius: 32px;
+      border-radius: 36px;
     }
 
     .chat-container {
@@ -563,7 +826,7 @@ import OriginalHeader from '../components/OriginalHeader.astro';
 
     .chat-background {
       height: calc(80vh - 25px); /* 减去顶部间隙 */
-      border-radius: 24px;
+      border-radius: 28px;
     }
 
     .chat-input-container {
