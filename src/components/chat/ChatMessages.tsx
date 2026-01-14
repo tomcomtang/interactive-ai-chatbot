@@ -13,6 +13,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Debug logging
+  console.log('🎭 ChatMessages render:', {
+    messageCount: messages.length,
+    status,
+    lastMessage: messages[messages.length - 1]
+  });
+
   // Auto scroll to bottom
   const scrollToBottom = () => {
     if (containerRef.current) {
@@ -128,6 +135,127 @@ const MessageContent: React.FC<{
     .map(part => part.text)
     .join('');
 
+  // Check if content contains A2UI JSON messages (A2UI standard format)
+  const isA2UIContent = (content: string): boolean => {
+    console.log('🔍 Checking A2UI content:', content);
+    
+    // Check for pure JSON format (A2UI standard)
+    const trimmed = content.trim();
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Check if it contains A2UI message structure
+          const hasA2UIStructure = parsed.some(msg => 
+            msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate
+          );
+          console.log('✅ A2UI structure detected:', hasA2UIStructure);
+          return hasA2UIStructure;
+        }
+      } catch (e) {
+        console.log('❌ JSON parse failed:', e);
+      }
+    }
+    
+    // Fallback: check for old format with delimiter (backward compatibility)
+    if (content.includes('---a2ui_JSON---')) {
+      console.log('✅ Old A2UI format detected');
+      return true;
+    }
+    
+    console.log('❌ No A2UI content detected');
+    return false;
+  };
+
+  // Parse A2UI messages from content (A2UI standard format)
+  const parseA2UIResponse = (content: string) => {
+    console.log('🔍 Parsing A2UI content:', content);
+    
+    // Handle pure JSON format (A2UI standard)
+    const trimmed = content.trim();
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      console.log('🔧 Processing A2UI standard JSON format');
+      return parseJSONPart(trimmed, '');
+    }
+    
+    // Handle old format with delimiter (backward compatibility)
+    if (content.includes('---a2ui_JSON---')) {
+      console.log('🔧 Processing legacy format with delimiter');
+      const parts = content.split('---a2ui_JSON---');
+      if (parts.length !== 2) {
+        console.log('❌ Invalid delimiter count:', parts.length);
+        return { textPart: content, a2uiMessages: [] };
+      }
+      
+      let textPart = parts[0].trim();
+      let jsonPart = parts[1].trim();
+      
+      console.log('📝 Text part:', textPart);
+      console.log('🔧 Raw JSON part:', jsonPart);
+      
+      // Clean up text part - remove any extra explanations
+      const lines = textPart.split('\n').filter(line => line.trim());
+      if (lines.length > 0) {
+        textPart = lines[0]; // Only keep the first line
+      }
+      
+      // More aggressive JSON cleaning
+      // Remove any text before the first [ and after the last ]
+      const startIndex = jsonPart.indexOf('[');
+      const endIndex = jsonPart.lastIndexOf(']');
+      
+      if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
+        console.error('❌ No valid JSON array found');
+        return { textPart: textPart || 'UI generated!', a2uiMessages: [] };
+      }
+      
+      jsonPart = jsonPart.substring(startIndex, endIndex + 1);
+      console.log('🧹 Cleaned JSON part:', jsonPart);
+      
+      return parseJSONPart(jsonPart, textPart);
+    }
+    
+    // Fallback: not A2UI content
+    console.log('❌ Content is not A2UI format');
+    return { textPart: content, a2uiMessages: [] };
+  };
+
+  // Helper function to parse JSON part
+  const parseJSONPart = (jsonPart: string, textPart: string = '') => {
+    try {
+      const a2uiMessages = JSON.parse(jsonPart);
+      console.log('✅ Successfully parsed A2UI messages:', a2uiMessages);
+      return { 
+        textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart, 
+        a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [] 
+      };
+    } catch (error) {
+      console.error('❌ Failed to parse A2UI JSON:', error);
+      console.error('📄 Problematic JSON:', jsonPart);
+      
+      // Try to fix common JSON issues
+      try {
+        // Remove trailing commas and fix common issues
+        let fixedJson = jsonPart
+          .replace(/,\s*}/g, '}')  // Remove trailing commas in objects
+          .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
+          .replace(/'/g, '"')      // Replace single quotes with double quotes
+          .replace(/(\w+):/g, '"$1":'); // Add quotes to unquoted keys
+        
+        console.log('🔧 Attempting to fix JSON:', fixedJson);
+        const a2uiMessages = JSON.parse(fixedJson);
+        console.log('✅ Successfully parsed fixed JSON');
+        return { 
+          textPart: textPart || 'UI generated!', 
+          a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [] 
+        };
+      } catch (fixError) {
+        console.error('❌ JSON fix attempt failed:', fixError);
+        return { textPart: textPart || 'UI generated!', a2uiMessages: [] };
+      }
+    }
+  };
+
   useEffect(() => {
     if (contentRef.current && !rendererRef.current) {
       rendererRef.current = new A2UIRenderer(contentRef.current);
@@ -135,45 +263,69 @@ const MessageContent: React.FC<{
   }, []);
 
   useEffect(() => {
+    console.log('📊 MessageContent useEffect triggered:', {
+      hasRenderer: !!rendererRef.current,
+      hasTextContent: !!textContent,
+      textContentLength: textContent?.length,
+      isStreaming,
+      messageId: message.id
+    });
+
     if (rendererRef.current && textContent && !isStreaming) {
-      // Only render content when not streaming
+      // Clear previous content
       if (contentRef.current) {
         contentRef.current.innerHTML = '';
       }
-      
-      const textMessage = {
-        type: 'createSurface' as const,
-        surfaceId: `text-${message.id}`,
-        components: [
-          {
-            type: 'Card',
-            id: 'message-card',
-            elevation: 1,
-            children: [
-              {
-                type: 'Text',
-                text: textContent,
-                size: 'medium'
-              }
-            ]
+
+      // Check if content contains A2UI JSON messages
+      if (isA2UIContent(textContent)) {
+        // Process A2UI standard format response
+        const { textPart, a2uiMessages } = parseA2UIResponse(textContent);
+        
+        console.log('🎯 A2UI processing result:', {
+          textPart,
+          messageCount: a2uiMessages.length,
+          messages: a2uiMessages
+        });
+        
+        // First render the text part if it exists
+        if (textPart && contentRef.current) {
+          // Create a simple text display for the conversational part
+          const textDiv = document.createElement('div');
+          textDiv.style.cssText = 'padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white; margin-bottom: 16px;';
+          textDiv.textContent = textPart;
+          contentRef.current.appendChild(textDiv);
+        }
+        
+        // Then process A2UI messages using the standard format
+        try {
+          a2uiMessages.forEach((msg: any, index: number) => {
+            console.log(`🔄 Processing A2UI message ${index + 1}:`, msg);
+            rendererRef.current?.processMessage(msg);
+          });
+          console.log('✅ All A2UI messages processed successfully');
+        } catch (error) {
+          console.error('❌ Error processing A2UI messages:', error);
+          // Fallback to text display
+          if (contentRef.current) {
+            contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textPart || textContent}</div>`;
           }
-        ]
-      };
-      
-      try {
-        rendererRef.current.processMessage(textMessage);
-      } catch (error) {
-        console.error('Error rendering message:', error);
-        // Fallback to simple text display
+        }
+      } else {
+        // Regular text content - display as simple text
+        console.log('📝 Displaying regular text content');
         if (contentRef.current) {
           contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
         }
       }
     } else if (!isStreaming && textContent) {
       // If A2UI renderer is not available, display text directly
+      console.log('⚠️ A2UI renderer not available, displaying text directly');
       if (contentRef.current) {
         contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
       }
+    } else {
+      console.log('⏳ Waiting for content or still streaming...');
     }
   }, [textContent, message.id, isStreaming]);
 
