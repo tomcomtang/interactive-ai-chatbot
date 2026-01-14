@@ -113,23 +113,50 @@ const MessageContent: React.FC<{
 
   // Check if content contains A2UI JSON messages (A2UI standard format)
   const isA2UIContent = (content: string): boolean => {
-    console.log('🔍 Checking A2UI content:', content);
+    console.log('🔍 Checking A2UI content (first 300 chars):', content.substring(0, 300));
+    
+    // Look for JSON array pattern anywhere in the content
+    const jsonArrayMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (jsonArrayMatch) {
+      const jsonStr = jsonArrayMatch[0];
+      console.log('🔍 Found JSON array pattern');
+      
+      try {
+        const parsed = JSON.parse(jsonStr);
+        console.log('🔍 Parsed JSON successfully:', parsed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Check if it contains A2UI message structure (v0.9 format)
+          const hasA2UIStructure = parsed.some(msg => 
+            msg.createSurface || msg.updateComponents || msg.updateDataModel ||
+            msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate  // backward compatibility
+          );
+          console.log('✅ A2UI structure detected:', hasA2UIStructure);
+          console.log('🔍 First message keys:', Object.keys(parsed[0] || {}));
+          return hasA2UIStructure;
+        }
+      } catch (e) {
+        console.log('❌ JSON parse failed:', e);
+      }
+    }
     
     // Check for pure JSON format (A2UI standard)
     const trimmed = content.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
       try {
         const parsed = JSON.parse(trimmed);
+        console.log('🔍 Parsed pure JSON successfully:', parsed);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Check if it contains A2UI message structure
+          // Check if it contains A2UI message structure (v0.9 format)
           const hasA2UIStructure = parsed.some(msg => 
-            msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate
+            msg.createSurface || msg.updateComponents || msg.updateDataModel ||
+            msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate  // backward compatibility
           );
           console.log('✅ A2UI structure detected:', hasA2UIStructure);
+          console.log('🔍 First message keys:', Object.keys(parsed[0] || {}));
           return hasA2UIStructure;
         }
       } catch (e) {
-        console.log('❌ JSON parse failed:', e);
+        console.log('❌ Pure JSON parse failed:', e);
       }
     }
     
@@ -145,12 +172,36 @@ const MessageContent: React.FC<{
 
   // Parse A2UI messages from content (A2UI standard format)
   const parseA2UIResponse = (content: string) => {
-    console.log('🔍 Parsing A2UI content:', content);
+    console.log('🔍 Parsing A2UI content (first 300 chars):', content.substring(0, 300));
+    
+    // Try to find and extract JSON array from the content
+    const jsonArrayMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (jsonArrayMatch) {
+      const jsonStr = jsonArrayMatch[0];
+      console.log('🔧 Found JSON array, processing...');
+      
+      try {
+        const a2uiMessages = JSON.parse(jsonStr);
+        console.log('✅ Successfully parsed A2UI messages:', a2uiMessages);
+        
+        // Extract any text before the JSON as textPart
+        const beforeJson = content.substring(0, content.indexOf(jsonStr)).trim();
+        const textPart = beforeJson.length > 0 ? beforeJson : '';
+        
+        return { 
+          textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart, 
+          a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [] 
+        };
+      } catch (error) {
+        console.error('❌ Failed to parse JSON array:', error);
+        return { textPart: 'Failed to parse UI data', a2uiMessages: [] };
+      }
+    }
     
     // Handle pure JSON format (A2UI standard)
     const trimmed = content.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-      console.log('🔧 Processing A2UI standard JSON format');
+      console.log('🔧 Processing pure JSON format');
       return parseJSONPart(trimmed, '');
     }
     
@@ -234,9 +285,11 @@ const MessageContent: React.FC<{
 
   useEffect(() => {
     if (contentRef.current && !rendererRef.current) {
+      console.log('🏗️ Initializing A2UI renderer...');
       rendererRef.current = new A2UIRenderer(contentRef.current);
+      console.log('✅ A2UI renderer initialized successfully');
     }
-  }, []);
+  }, [contentRef.current]); // 依赖于contentRef.current的变化
 
   useEffect(() => {
     console.log('📊 MessageContent useEffect triggered:', {
@@ -247,14 +300,31 @@ const MessageContent: React.FC<{
       messageId: message.id
     });
 
+    // 确保渲染器已初始化
+    if (contentRef.current && !rendererRef.current) {
+      console.log('🏗️ Late initializing A2UI renderer...');
+      rendererRef.current = new A2UIRenderer(contentRef.current);
+      console.log('✅ A2UI renderer late initialized successfully');
+    }
+
     if (rendererRef.current && textContent && !isStreaming) {
+      console.log('🎯 MessageContent processing:', {
+        hasRenderer: !!rendererRef.current,
+        textContent: textContent.substring(0, 200) + '...',
+        isStreaming
+      });
+      
       // Clear previous content
       if (contentRef.current) {
         contentRef.current.innerHTML = '';
       }
 
       // Check if content contains A2UI JSON messages
-      if (isA2UIContent(textContent)) {
+      const isA2UI = isA2UIContent(textContent);
+      console.log('🎯 A2UI detection result:', isA2UI);
+      
+      if (isA2UI) {
+        console.log('🎯 A2UI content detected! Processing...');
         // Process A2UI standard format response
         const { textPart, a2uiMessages } = parseA2UIResponse(textContent);
         
@@ -264,27 +334,42 @@ const MessageContent: React.FC<{
           messages: a2uiMessages
         });
         
-        // First render the text part if it exists
-        if (textPart && contentRef.current) {
-          // Create a simple text display for the conversational part
+        // First render the text part if it exists (but make it smaller since main content is UI)
+        if (textPart && textPart.trim() && contentRef.current) {
           const textDiv = document.createElement('div');
-          textDiv.style.cssText = 'padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white; margin-bottom: 16px;';
-          textDiv.textContent = textPart;
-          contentRef.current.appendChild(textDiv);
+          if (textDiv) {
+            textDiv.style.cssText = 'padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 6px; color: rgba(255,255,255,0.7); margin-bottom: 12px; font-size: 0.9em;';
+            if (typeof textDiv.textContent !== 'undefined') {
+              textDiv.textContent = textPart;
+            } else {
+              console.error('❌ textDiv.textContent is undefined');
+            }
+            contentRef.current.appendChild(textDiv);
+          } else {
+            console.error('❌ Failed to create textDiv element');
+          }
         }
         
         // Then process A2UI messages using the standard format
-        try {
-          a2uiMessages.forEach((msg: any, index: number) => {
-            console.log(`🔄 Processing A2UI message ${index + 1}:`, msg);
-            rendererRef.current?.processMessage(msg);
-          });
-          console.log('✅ All A2UI messages processed successfully');
-        } catch (error) {
-          console.error('❌ Error processing A2UI messages:', error);
-          // Fallback to text display
+        if (a2uiMessages.length > 0) {
+          try {
+            console.log(`🚀 Processing ${a2uiMessages.length} A2UI messages...`);
+            a2uiMessages.forEach((msg: any, index: number) => {
+              console.log(`🔄 Processing A2UI message ${index + 1}:`, msg);
+              rendererRef.current?.processMessage(msg);
+            });
+            console.log('✅ All A2UI messages processed successfully');
+          } catch (error) {
+            console.error('❌ Error processing A2UI messages:', error);
+            // Fallback to text display
+            if (contentRef.current) {
+              contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,0,0,0.1); border-radius: 8px; color: white;">❌ Error rendering UI: ${error}</div>`;
+            }
+          }
+        } else {
+          console.warn('⚠️ No A2UI messages found in parsed content');
           if (contentRef.current) {
-            contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textPart || textContent}</div>`;
+            contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
           }
         }
       } else {

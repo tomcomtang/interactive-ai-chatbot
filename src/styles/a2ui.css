@@ -159,27 +159,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;
-  max-height: 500px;
-}
-
-/* 自定义滚动条 - 与 Chat 风格一致 */
-.a2ui-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.a2ui-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 3px;
-}
-
-.a2ui-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
-}
-
-.a2ui-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  /* 完全移除滚动功能，让内容自然展开 */
 }
 
 /* Card */

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>A2UI Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .test-container { border: 1px solid #333; padding: 20px; margin: 20px 0; }
+        .a2ui-surface { border: 2px solid #666; padding: 10px; margin: 10px 0; }
+        .a2ui-text { color: white; margin: 5px 0; }
+        .a2ui-card { background: rgba(255,255,255,0.1); padding: 10px; margin: 5px 0; border-radius: 8px; }
+        .a2ui-column { display: flex; flex-direction: column; gap: 10px; }
+        button { padding: 10px 20px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>A2UI Renderer Test</h1>
+    
+    <div class="test-container">
+        <h2>Test Container</h2>
+        <div id="a2ui-container"></div>
+    </div>
+    
+    <button onclick="testA2UI()">Test A2UI Rendering</button>
+    
+    <script type="module">
+        // Import A2UI classes
+        import { A2UIRenderer } from '../lib/a2ui-renderer.js';
+        
+        window.testA2UI = function() {
+            console.log('🧪 Starting A2UI test...');
+            
+            const container = document.getElementById('a2ui-container');
+            if (!container) {
+                console.error('❌ Container element not found');
+                return;
+            }
+            container.innerHTML = ''; // Clear previous content
+            
+            const renderer = new A2UIRenderer(container);
+            
+            // Test data from user
+            const testMessages = [
+                {
+                    "createSurface": {
+                        "surfaceId": "website_list",
+                        "catalogId": "standard-catalog"
+                    }
+                },
+                {
+                    "updateComponents": {
+                        "surfaceId": "website_list",
+                        "components": [
+                            {
+                                "id": "root",
+                                "component": "Column",
+                                "children": ["title", "website1", "website2", "website3"],
+                                "justify": "start",
+                                "align": "start"
+                            },
+                            {
+                                "id": "title",
+                                "component": "Text",
+                                "text": "Website Examples",
+                                "variant": "h2"
+                            },
+                            {
+                                "id": "website1",
+                                "component": "Card",
+                                "children": ["website1_title", "website1_desc"]
+                            },
+                            {
+                                "id": "website1_title",
+                                "component": "Text",
+                                "text": "Google",
+                                "variant": "h3"
+                            },
+                            {
+                                "id": "website1_desc",
+                                "component": "Text",
+                                "text": "Search engine and technology company.",
+                                "variant": "body"
+                            }
+                        ]
+                    }
+                }
+            ];
+            
+            console.log('🧪 Processing test messages:', testMessages);
+            
+            try {
+                testMessages.forEach((msg, index) => {
+                    console.log(`🧪 Processing message ${index + 1}:`, msg);
+                    renderer.processMessage(msg);
+                });
+                console.log('✅ Test completed successfully');
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                container.innerHTML = '<div style="color: red;">Test failed: ' + error.message + '</div>';
+            }
+        };
+    </script>
+</body>
+</html>
