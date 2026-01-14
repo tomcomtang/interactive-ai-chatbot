@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://a2ui.dev/specification/v0_9/complete_schema.json",
+  "title": "A2UI v0.9 Complete Schema for AI Generation",
+  "description": "Complete A2UI v0.9 schema for AI to generate structured UI messages. Always return JSON array format.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "oneOf": [
+      { "$ref": "#/$defs/CreateSurfaceMessage" },
+      { "$ref": "#/$defs/UpdateComponentsMessage" },
+      { "$ref": "#/$defs/UpdateDataModelMessage" },
+      { "$ref": "#/$defs/DeleteSurfaceMessage" }
+    ]
+  },
+  "$defs": {
+    "CreateSurfaceMessage": {
+      "type": "object",
+      "properties": {
+        "createSurface": {
+          "type": "object",
+          "properties": {
+            "surfaceId": {
+              "type": "string",
+              "description": "Unique identifier for the UI surface"
+            },
+            "catalogId": {
+              "type": "string",
+              "description": "Catalog identifier - use 'standard-catalog'",
+              "default": "standard-catalog"
+            }
+          },
+          "required": ["surfaceId", "catalogId"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["createSurface"],
+      "additionalProperties": false
+    },
+    "UpdateComponentsMessage": {
+      "type": "object",
+      "properties": {
+        "updateComponents": {
+          "type": "object",
+          "properties": {
+            "surfaceId": {
+              "type": "string",
+              "description": "Must match the surfaceId from createSurface"
+            },
+            "components": {
+              "type": "array",
+              "description": "Array of UI components. Must include one component with id='root'",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/Component" }
+            }
+          },
+          "required": ["surfaceId", "components"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["updateComponents"],
+      "additionalProperties": false
+    },
+    "UpdateDataModelMessage": {
+      "type": "object",
+      "properties": {
+        "updateDataModel": {
+          "type": "object",
+          "properties": {
+            "surfaceId": { "type": "string" },
+            "actorId": { "type": "string", "default": "agent" },
+            "updates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "path": { "type": "string" },
+                  "value": {},
+                  "hlc": { "type": "string" }
+                },
+                "required": ["path", "value", "hlc"]
+              }
+            },
+            "versions": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          },
+          "required": ["surfaceId", "actorId", "updates", "versions"]
+        }
+      },
+      "required": ["updateDataModel"],
+      "additionalProperties": false
+    },
+    "DeleteSurfaceMessage": {
+      "type": "object",
+      "properties": {
+        "deleteSurface": {
+          "type": "object",
+          "properties": {
+            "surfaceId": { "type": "string" }
+          },
+          "required": ["surfaceId"]
+        }
+      },
+      "required": ["deleteSurface"],
+      "additionalProperties": false
+    },
+    "Component": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique component identifier"
+        },
+        "component": {
+          "type": "string",
+          "enum": ["Text", "Image", "Icon", "Video", "AudioPlayer", "Row", "Column", "List", "Card", "Tabs", "Modal", "Divider", "Button", "TextField", "CheckBox", "ChoicePicker", "Slider", "DateTimeInput"]
+        },
+        "weight": {
+          "type": "number",
+          "description": "Flex weight for layout (optional)"
+        }
+      },
+      "required": ["id", "component"],
+      "allOf": [
+        {
+          "if": { "properties": { "component": { "const": "Text" } } },
+          "then": {
+            "properties": {
+              "text": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ],
+                "description": "Text content to display"
+              },
+              "variant": {
+                "type": "string",
+                "enum": ["h1", "h2", "h3", "h4", "h5", "caption", "body"],
+                "description": "Text style variant"
+              }
+            },
+            "required": ["text"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Image" } } },
+          "then": {
+            "properties": {
+              "url": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ],
+                "description": "Image URL"
+              },
+              "fit": {
+                "type": "string",
+                "enum": ["contain", "cover", "fill", "none", "scale-down"]
+              },
+              "variant": {
+                "type": "string",
+                "enum": ["icon", "avatar", "smallFeature", "mediumFeature", "largeFeature", "header"]
+              }
+            },
+            "required": ["url"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Icon" } } },
+          "then": {
+            "properties": {
+              "name": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "enum": ["accountCircle", "add", "arrowBack", "arrowForward", "attachFile", "calendarToday", "call", "camera", "check", "close", "delete", "download", "edit", "event", "error", "fastForward", "favorite", "favoriteOff", "folder", "help", "home", "info", "locationOn", "lock", "lockOpen", "mail", "menu", "moreVert", "moreHoriz", "notificationsOff", "notifications", "pause", "payment", "person", "phone", "photo", "play", "print", "refresh", "rewind", "search", "send", "settings", "share", "shoppingCart", "skipNext", "skipPrevious", "star", "starHalf", "starOff", "stop", "upload", "visibility", "visibilityOff", "volumeDown", "volumeMute", "volumeOff", "volumeUp", "warning"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": { "path": { "type": "string" } },
+                    "required": ["path"]
+                  }
+                ]
+              }
+            },
+            "required": ["name"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Video" } } },
+          "then": {
+            "properties": {
+              "url": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              }
+            },
+            "required": ["url"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "AudioPlayer" } } },
+          "then": {
+            "properties": {
+              "url": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "description": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              }
+            },
+            "required": ["url"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Row" } } },
+          "then": {
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Array of child component IDs"
+              },
+              "justify": {
+                "type": "string",
+                "enum": ["center", "end", "spaceAround", "spaceBetween", "spaceEvenly", "start", "stretch"]
+              },
+              "align": {
+                "type": "string",
+                "enum": ["start", "center", "end", "stretch"]
+              }
+            },
+            "required": ["children"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Column" } } },
+          "then": {
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Array of child component IDs"
+              },
+              "justify": {
+                "type": "string",
+                "enum": ["start", "center", "end", "spaceBetween", "spaceAround", "spaceEvenly", "stretch"]
+              },
+              "align": {
+                "type": "string",
+                "enum": ["center", "end", "start", "stretch"]
+              }
+            },
+            "required": ["children"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "List" } } },
+          "then": {
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Array of child component IDs"
+              },
+              "direction": {
+                "type": "string",
+                "enum": ["vertical", "horizontal"],
+                "default": "vertical"
+              },
+              "align": {
+                "type": "string",
+                "enum": ["start", "center", "end", "stretch"]
+              }
+            },
+            "required": ["children"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Card" } } },
+          "then": {
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Array of child component IDs for card content"
+              }
+            },
+            "required": ["children"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Button" } } },
+          "then": {
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Array containing button content (usually Text or Icon)"
+              },
+              "primary": {
+                "type": "boolean",
+                "description": "Whether this is a primary button"
+              },
+              "action": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "context": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": ["name"]
+              }
+            },
+            "required": ["children", "action"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "TextField" } } },
+          "then": {
+            "properties": {
+              "label": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "value": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "variant": {
+                "type": "string",
+                "enum": ["longText", "number", "shortText", "obscured"]
+              }
+            },
+            "required": ["label"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "CheckBox" } } },
+          "then": {
+            "properties": {
+              "label": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/$defs/DynamicString" }
+                ]
+              },
+              "value": {
+                "oneOf": [
+                  { "type": "boolean" },
+                  { "$ref": "#/$defs/DynamicBoolean" }
+                ]
+              }
+            },
+            "required": ["label", "value"]
+          }
+        },
+        {
+          "if": { "properties": { "component": { "const": "Divider" } } },
+          "then": {
+            "properties": {
+              "axis": {
+                "type": "string",
+                "enum": ["horizontal", "vertical"],
+                "default": "horizontal"
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "DynamicString": {
+      "type": "object",
+      "properties": {
+        "literalString": { "type": "string" },
+        "path": { "type": "string" }
+      },
+      "oneOf": [
+        { "required": ["literalString"] },
+        { "required": ["path"] }
+      ]
+    },
+    "DynamicBoolean": {
+      "type": "object",
+      "properties": {
+        "literalBoolean": { "type": "boolean" },
+        "path": { "type": "string" }
+      },
+      "oneOf": [
+        { "required": ["literalBoolean"] },
+        { "required": ["path"] }
+      ]
+    }
+  }
+}
