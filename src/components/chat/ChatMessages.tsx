@@ -1,15 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { A2UIRenderer } from '../../lib/a2ui-renderer';
-import { allMockExamples } from '../../lib/a2ui-mock-data';
 import type { UIMessage } from 'ai';
 
 interface ChatMessagesProps {
   messages: UIMessage[];
   status: 'ready' | 'streaming' | 'submitted' | 'error';
-  commandMap: Record<string, keyof typeof allMockExamples>;
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMap }) => {
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -44,20 +42,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
     }
   }, [status]);
 
-  // Check if message is A2UI command
-  const isA2UICommand = (message: UIMessage) => {
-    if (message.role !== 'user') return false;
-    const text = message.parts.find(part => part.type === 'text')?.text || '';
-    return commandMap[text.toLowerCase()] !== undefined;
-  };
-
-  // Get A2UI demo type
-  const getA2UIDemoType = (message: UIMessage): keyof typeof allMockExamples | null => {
-    if (message.role !== 'user') return null;
-    const text = message.parts.find(part => part.type === 'text')?.text || '';
-    return commandMap[text.toLowerCase()] || null;
-  };
-
   return (
     <div ref={containerRef} className="chat-container">
       <div className="chat-messages">
@@ -71,7 +55,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
         {messages.map((message, index) => {
           const isLastMessage = index === messages.length - 1;
           const isStreaming = status === 'streaming' && isLastMessage && message.role === 'assistant';
-          const demoType = getA2UIDemoType(message);
           
           return (
             <div key={message.id} className={`message ${message.role === 'user' ? 'user' : 'ai'}-message`}>
@@ -100,17 +83,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
                 background: 'transparent',
                 border: 'none'
               }}>
-                {/* Show A2UI demo if this is an AI response to A2UI command */}
-                {message.role === 'assistant' && index > 0 && isA2UICommand(messages[index - 1]) && demoType ? (
-                  <A2UIMessage demoType={getA2UIDemoType(messages[index - 1])!} />
-                ) : (
-                  <MessageContent 
-                    message={message} 
-                    isStreaming={isStreaming}
-                  />
-                )}
-                
-                {/* Removed original streaming indicator, now handled inside MessageContent */}
+                <MessageContent 
+                  message={message} 
+                  isStreaming={isStreaming}
+                />
               </div>
             </div>
           );
@@ -372,44 +348,6 @@ const LoadingDots: React.FC = () => {
       ))}
     </div>
   );
-};
-
-// A2UI demo message component
-const A2UIMessage: React.FC<{ demoType: keyof typeof allMockExamples }> = ({ demoType }) => {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      const renderer = new A2UIRenderer(contentRef.current);
-      
-      // Listen for action events
-      const handleAction = (e: CustomEvent) => {
-        console.log('A2UI Action:', e.detail);
-        alert(`Action: ${e.detail.actionName}\nData: ${JSON.stringify(e.detail.dataModel, null, 2)}`);
-      };
-      
-      contentRef.current.addEventListener('a2ui:action', handleAction as EventListener);
-      
-      // Process all messages
-      const messages = allMockExamples[demoType];
-      try {
-        messages.forEach((msg: any) => {
-          renderer.processMessage(msg);
-        });
-      } catch (error) {
-        console.error('Error processing A2UI messages:', error);
-      }
-      
-      // Cleanup event listeners
-      return () => {
-        if (contentRef.current) {
-          contentRef.current.removeEventListener('a2ui:action', handleAction as EventListener);
-        }
-      };
-    }
-  }, [demoType]);
-
-  return <div ref={contentRef} />;
 };
 
 export default ChatMessages;

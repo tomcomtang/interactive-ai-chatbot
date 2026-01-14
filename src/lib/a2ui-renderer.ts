@@ -39,15 +39,54 @@ export class A2UIRenderer {
    * Process A2UI v0.9 standard messages
    */
   processMessage(message: A2UIMessage): void {
-    if ('beginRendering' in message) {
-      this.messageHandlers.handleBeginRendering(message.beginRendering);
-    } else if ('surfaceUpdate' in message) {
-      this.messageHandlers.handleSurfaceUpdate(message.surfaceUpdate);
-    } else if ('dataModelUpdate' in message) {
-      this.messageHandlers.handleDataModelUpdate(message.dataModelUpdate);
+    if ('createSurface' in message) {
+      this.messageHandlers.handleCreateSurface(message.createSurface);
+    } else if ('updateComponents' in message) {
+      this.messageHandlers.handleUpdateComponents(message.updateComponents);
+    } else if ('updateDataModel' in message) {
+      this.messageHandlers.handleUpdateDataModel(message.updateDataModel);
     } else if ('deleteSurface' in message) {
       this.messageHandlers.handleDeleteSurface(message.deleteSurface);
+    } else {
+      // Legacy v0.8 support
+      if ('beginRendering' in message) {
+        console.warn('⚠️ Using deprecated beginRendering, consider upgrading to createSurface');
+        this.messageHandlers.handleBeginRendering((message as any).beginRendering);
+      } else if ('surfaceUpdate' in message) {
+        console.warn('⚠️ Using deprecated surfaceUpdate, consider upgrading to updateComponents');
+        this.messageHandlers.handleSurfaceUpdate((message as any).surfaceUpdate);
+      } else if ('dataModelUpdate' in message) {
+        console.warn('⚠️ Using legacy dataModelUpdate format');
+        // Convert legacy format to v0.9
+        const legacyData = (message as any).dataModelUpdate;
+        const v09Data = {
+          surfaceId: legacyData.surfaceId,
+          actorId: 'legacy-agent',
+          updates: [{
+            path: legacyData.path || '/',
+            value: legacyData.contents,
+            hlc: new Date().toISOString() + ':1:legacy-agent'
+          }],
+          versions: {
+            'legacy-agent': new Date().toISOString() + ':1:legacy-agent'
+          }
+        };
+        this.messageHandlers.handleUpdateDataModel(v09Data);
+      }
     }
+  }
+
+  /**
+   * Process multiple messages (typical A2UI response format)
+   */
+  processMessages(messages: A2UIMessage[]): void {
+    messages.forEach(message => {
+      try {
+        this.processMessage(message);
+      } catch (error) {
+        console.error('❌ Failed to process A2UI message:', error, message);
+      }
+    });
   }
 
   /**
@@ -73,5 +112,40 @@ export class A2UIRenderer {
    */
   getDataModels(): Map<string, any> {
     return this.dataModels;
+  }
+
+  /**
+   * Validate A2UI message format (basic validation)
+   */
+  static validateMessage(message: any): boolean {
+    if (!message || typeof message !== 'object') {
+      return false;
+    }
+
+    const validMessageTypes = ['createSurface', 'updateComponents', 'updateDataModel', 'deleteSurface'];
+    const messageKeys = Object.keys(message);
+    
+    // Should have exactly one message type
+    if (messageKeys.length !== 1) {
+      return false;
+    }
+
+    const messageType = messageKeys[0];
+    if (!validMessageTypes.includes(messageType)) {
+      // Check for legacy formats
+      const legacyTypes = ['beginRendering', 'surfaceUpdate', 'dataModelUpdate'];
+      return legacyTypes.includes(messageType);
+    }
+
+    return true;
+  }
+
+  /**
+   * Generate HLC timestamp for data updates
+   */
+  static generateHLC(actorId: string = 'client'): string {
+    const timestamp = new Date().toISOString();
+    const counter = Math.floor(Math.random() * 1000);
+    return `${timestamp}:${counter}:${actorId}`;
   }
 }
