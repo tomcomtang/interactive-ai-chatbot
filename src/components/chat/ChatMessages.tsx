@@ -20,19 +20,22 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
     }
   };
 
-  // Auto scroll when messages change or streaming status changes
+  // Only auto scroll when:
+  // 1. New messages are added (messages array length changes)
+  // 2. Streaming finishes (status changes from 'streaming' to 'ready')
   useEffect(() => {
     scrollToBottom();
-  }, [messages, status]);
+  }, [messages.length]); // Only when new messages are added
 
-  // Also scroll when message content updates (for streaming)
+  // Scroll when streaming finishes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollToBottom();
-    }, 100); // Small delay to ensure DOM updates
-    
-    return () => clearTimeout(timer);
-  }, [messages.length > 0 ? messages[messages.length - 1]?.parts : null]);
+    if (status === 'ready') {
+      // Small delay to ensure content is rendered
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [status]);
 
   // Check if message is A2UI command
   const isA2UICommand = (message: UIMessage) => {
@@ -96,8 +99,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
                 ) : (
                   <MessageContent 
                     message={message} 
-                    isStreaming={isStreaming} 
-                    onContentRendered={scrollToBottom}
+                    isStreaming={isStreaming}
                   />
                 )}
                 
@@ -115,9 +117,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
 // Render message content (using AI SDK parts)
 const MessageContent: React.FC<{ 
   message: UIMessage; 
-  isStreaming: boolean; 
-  onContentRendered?: () => void;
-}> = ({ message, isStreaming, onContentRendered }) => {
+  isStreaming: boolean;
+}> = ({ message, isStreaming }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
   
@@ -161,30 +162,20 @@ const MessageContent: React.FC<{
       
       try {
         rendererRef.current.processMessage(textMessage);
-        // Trigger scroll after content is rendered
-        setTimeout(() => {
-          onContentRendered?.();
-        }, 50);
       } catch (error) {
         console.error('Error rendering message:', error);
         // Fallback to simple text display
         if (contentRef.current) {
           contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
-          setTimeout(() => {
-            onContentRendered?.();
-          }, 50);
         }
       }
     } else if (!isStreaming && textContent) {
       // If A2UI renderer is not available, display text directly
       if (contentRef.current) {
         contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
-        setTimeout(() => {
-          onContentRendered?.();
-        }, 50);
       }
     }
-  }, [textContent, message.id, isStreaming, onContentRendered]);
+  }, [textContent, message.id, isStreaming]);
 
   // Show loading animation if streaming
   if (isStreaming) {
