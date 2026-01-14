@@ -84,21 +84,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
                 {message.role === 'assistant' && index > 0 && isA2UICommand(messages[index - 1]) && demoType ? (
                   <A2UIMessage demoType={getA2UIDemoType(messages[index - 1])!} />
                 ) : (
-                  <MessageContent message={message} />
+                  <MessageContent message={message} isStreaming={isStreaming} />
                 )}
                 
-                {isStreaming && (
-                  <span className="streaming-indicator" style={{
-                    display: 'inline-block',
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                    borderRadius: '50%',
-                    marginLeft: '4px',
-                    animation: 'pulse 1.5s ease-in-out infinite'
-                  }}>
-                  </span>
-                )}
+                {/* 移除原来的流式指示器，现在在MessageContent内部处理 */}
               </div>
             </div>
           );
@@ -110,7 +99,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, commandMa
 };
 
 // 渲染消息内容（使用AI SDK的parts）
-const MessageContent: React.FC<{ message: UIMessage }> = ({ message }) => {
+const MessageContent: React.FC<{ message: UIMessage; isStreaming: boolean }> = ({ message, isStreaming }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
   
@@ -127,8 +116,8 @@ const MessageContent: React.FC<{ message: UIMessage }> = ({ message }) => {
   }, []);
 
   useEffect(() => {
-    if (rendererRef.current && textContent) {
-      // 清空之前的内容
+    if (rendererRef.current && textContent && !isStreaming) {
+      // 只有在不是流式状态时才渲染内容
       if (contentRef.current) {
         contentRef.current.innerHTML = '';
       }
@@ -161,10 +150,57 @@ const MessageContent: React.FC<{ message: UIMessage }> = ({ message }) => {
           contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
         }
       }
+    } else if (!isStreaming && textContent) {
+      // 如果A2UI渲染器不可用，直接显示文本
+      if (contentRef.current) {
+        contentRef.current.innerHTML = `<div style="padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; color: white;">${textContent}</div>`;
+      }
     }
-  }, [textContent, message.id]);
+  }, [textContent, message.id, isStreaming]);
+
+  // 如果正在流式传输，显示加载动画
+  if (isStreaming) {
+    return (
+      <div style={{
+        padding: '12px',
+        background: 'rgba(255,255,255,0.1)',
+        borderRadius: '8px',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        <LoadingDots />
+      </div>
+    );
+  }
 
   return <div ref={contentRef} />;
+};
+
+// 加载动画组件
+const LoadingDots: React.FC = () => {
+  return (
+    <div className="loading-dots" style={{
+      display: 'flex',
+      gap: '4px',
+      alignItems: 'center'
+    }}>
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="loading-dot"
+          style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            animation: `loadingDot 1.4s ease-in-out ${i * 0.16}s infinite both`
+          }}
+        />
+      ))}
+    </div>
+  );
 };
 
 // A2UI 演示消息组件
