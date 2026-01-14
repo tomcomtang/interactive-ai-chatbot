@@ -269,7 +269,7 @@ footer[class*="Footer-module"] {
   justify-content: flex-start;
   margin-right: auto;
   width: auto !important;
-  max-width: calc(100% - 2rem);
+  max-width: 70% !important;
 }
 
 .user-message .message-avatar {
@@ -282,8 +282,8 @@ footer[class*="Footer-module"] {
   flex-wrap: nowrap !important;
   justify-content: flex-start;
   margin-right: auto;
-  width: auto !important;
-  max-width: calc(100% - 1rem); /* 增加可用宽度 */
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .ai-message .message-avatar {
