@@ -107,7 +107,71 @@ ${JSON.stringify(a2uiSchema, null, 2)}
 
 // Check if request is UI generation request
 const isUIRequest = (messageText: string): boolean => {
-  return /create|make|build|show|card|button|form|website|page|interface|top|richest|ranking|list/.test(messageText.toLowerCase());
+  // Check for explicit UI keywords
+  if (/create|make|build|show|card|button|form|website|page|interface|top|richest|ranking|list/.test(messageText.toLowerCase())) {
+    return true;
+  }
+  
+  // Check if message contains A2UI Action (button click) - this should trigger UI response
+  if (messageText.includes('A2UI Action:') || messageText.includes('"action"')) {
+    try {
+      // Try to extract and parse A2UI Action JSON
+      const actionMatch = messageText.match(/A2UI Action:\s*(\{[\s\S]*\})/);
+      if (actionMatch) {
+        const actionJson = JSON.parse(actionMatch[1]);
+        if (actionJson.action && actionJson.action.name) {
+          console.log('✅ Detected A2UI Action in message, treating as UI request');
+          console.log('📋 Action details:', JSON.stringify(actionJson, null, 2));
+          return true;
+        }
+      }
+    } catch (e) {
+      // If parsing fails, still check for action keyword
+      console.log('⚠️ Failed to parse A2UI Action, but action keyword found');
+    }
+  }
+  
+  return false;
+};
+
+// Check if content is A2UI JSON (should not be sent as conversation history)
+const isA2UIJSON = (content: string): boolean => {
+  if (!content || typeof content !== 'string') return false;
+  
+  const trimmed = content.trim();
+  
+  // Check for A2UI JSON array pattern
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Check if it contains A2UI message structure
+        return parsed.some((msg: any) => 
+          msg.createSurface || msg.updateComponents || msg.updateDataModel || msg.deleteSurface ||
+          msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate // backward compatibility
+        );
+      }
+    } catch (e) {
+      // Not valid JSON, continue checking
+    }
+  }
+  
+  // Check for A2UI JSON pattern in string (escaped JSON)
+  const jsonArrayMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
+  if (jsonArrayMatch) {
+    try {
+      const parsed = JSON.parse(jsonArrayMatch[0]);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.some((msg: any) => 
+          msg.createSurface || msg.updateComponents || msg.updateDataModel || msg.deleteSurface
+        );
+      }
+    } catch (e) {
+      // Not valid JSON
+    }
+  }
+  
+  return false;
 };
 
 // Validate A2UI JSON (similar to A2UI source code)
@@ -212,6 +276,13 @@ export const POST: APIRoute = async ({ request }) => {
             const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
             msgContent = textPart?.text || '';
           }
+          
+          // Skip A2UI JSON responses - they are for UI rendering, not conversation history
+          if (msgContent && isA2UIJSON(msgContent)) {
+            console.log(`⏭️ Skipping A2UI JSON response (not part of conversation history)`);
+            return; // Skip this message
+          }
+          
           if (msgContent) {
             // Google Gemini API only accepts 'user' or 'model', not 'assistant'
             const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
@@ -238,6 +309,22 @@ export const POST: APIRoute = async ({ request }) => {
           const textPart = currentUserMsg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
           userContent = textPart?.text || '';
         }
+        
+        // Extract and log A2UI Action if present
+        if (userContent && userContent.includes('A2UI Action:')) {
+          try {
+            const actionMatch = userContent.match(/A2UI Action:\s*(\{[\s\S]*\})/);
+            if (actionMatch) {
+              const a2uiAction = JSON.parse(actionMatch[1]);
+              console.log('🎯 A2UI Action extracted from user message:', JSON.stringify(a2uiAction, null, 2));
+              console.log('📋 Action name:', a2uiAction.action?.name);
+              console.log('📋 Action context:', JSON.stringify(a2uiAction.action?.context, null, 2));
+            }
+          } catch (e) {
+            console.warn('⚠️ Failed to parse A2UI Action from message:', e);
+          }
+        }
+        
         if (userContent) {
           apiMessages.push({
             role: 'user',
@@ -270,6 +357,11 @@ export const POST: APIRoute = async ({ request }) => {
 
       console.log('📋 Using Function Calling mode (A2UI原理)');
       console.log('📤 Final apiMessages to send:', JSON.stringify(apiMessages.map(m => ({ role: m.role, textLength: m.parts?.[0]?.text?.length || 0 })), null, 2));
+      
+      // Print full JSON content being sent to AI
+      console.log('🎨 ========== JSON Content Sent to AI ==========');
+      console.log(JSON.stringify(apiMessages, null, 2));
+      console.log('🎨 ==============================================');
 
       // Validate all messages have valid roles before sending
       const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');
@@ -362,6 +454,13 @@ export const POST: APIRoute = async ({ request }) => {
             const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
             msgContent = textPart?.text || '';
           }
+          
+          // Skip A2UI JSON responses - they are for UI rendering, not conversation history
+          if (msgContent && isA2UIJSON(msgContent)) {
+            console.log(`⏭️ Skipping A2UI JSON response (not part of conversation history)`);
+            return; // Skip this message
+          }
+          
           if (msgContent) {
             // Google Gemini API only accepts 'user' or 'model', not 'assistant'
             const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';

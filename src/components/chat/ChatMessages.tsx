@@ -53,23 +53,23 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMes
             <p>Hi! I'm your AI assistant. Ask me anything or try typing keywords like "profile", "products" to see UI components.</p>
           </div>
         )}
-        
+
         {messages.map((message, index) => {
           const isLastMessage = index === messages.length - 1;
           const isStreaming = status === 'streaming' && isLastMessage && message.role === 'assistant';
-          
+
           return (
             <div key={message.id} className={`message ${message.role === 'user' ? 'user' : 'ai'}-message`}>
               <div className="message-avatar">
                 {message.role === 'user' ? (
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="12" r="11" fill="rgba(255, 255, 255, 0.1)" stroke="currentColor" strokeWidth="1"/>
-                    <path d="M12 5c1.8 0 3.2 1.4 3.2 3.2S13.8 11.4 12 11.4s-3.2-1.4-3.2-3.2S10.2 5 12 5zm0 7.2c2.4 0 7.2 1.2 7.2 3.6v1.4c0 0.4-0.4 0.8-0.8 0.8H5.6c-0.4 0-0.8-0.4-0.8-0.8v-1.4c0-2.4 4.8-3.6 7.2-3.6z"/>
+                    <circle cx="12" cy="12" r="11" fill="rgba(255, 255, 255, 0.1)" stroke="currentColor" strokeWidth="1" />
+                    <path d="M12 5c1.8 0 3.2 1.4 3.2 3.2S13.8 11.4 12 11.4s-3.2-1.4-3.2-3.2S10.2 5 12 5zm0 7.2c2.4 0 7.2 1.2 7.2 3.6v1.4c0 0.4-0.4 0.8-0.8 0.8H5.6c-0.4 0-0.8-0.4-0.8-0.8v-1.4c0-2.4 4.8-3.6 7.2-3.6z" />
                   </svg>
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="12" r="11" fill="rgba(255, 255, 255, 0.1)" stroke="currentColor" strokeWidth="1"/>
-                    <path d="M12 3.5l2.32 4.69L20 9.27l-4 3.9 0.94 5.48L12 16.23l-4.94 2.42L8 13.17 4 9.27l5.68-1.08L12 3.5z"/>
+                    <circle cx="12" cy="12" r="11" fill="rgba(255, 255, 255, 0.1)" stroke="currentColor" strokeWidth="1" />
+                    <path d="M12 3.5l2.32 4.69L20 9.27l-4 3.9 0.94 5.48L12 16.23l-4.94 2.42L8 13.17 4 9.27l5.68-1.08L12 3.5z" />
                   </svg>
                 )}
               </div>
@@ -85,8 +85,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMes
                 background: 'transparent',
                 border: 'none'
               }}>
-                <MessageContent 
-                  message={message} 
+                <MessageContent
+                  message={message}
                   isStreaming={isStreaming}
                   onSendMessage={onSendMessage}
                 />
@@ -101,38 +101,38 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMes
 };
 
 // Render message content
-const MessageContent: React.FC<{ 
-  message: ChatMessage; 
+const MessageContent: React.FC<{
+  message: ChatMessage;
   isStreaming: boolean;
   onSendMessage?: (message: { text: string }) => Promise<void>;
 }> = ({ message, isStreaming, onSendMessage }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
-  
+
   // Get all text content (兼容 parts 和直接 content)
   const textContent = message.parts
     ? message.parts
-        .filter(part => part.type === 'text')
-        .map(part => part.text)
-        .join('')
+      .filter(part => part.type === 'text')
+      .map(part => part.text)
+      .join('')
     : message.content || '';
 
   // Check if content contains A2UI JSON messages (A2UI standard format)
   const isA2UIContent = (content: string): boolean => {
     console.log('🔍 Checking A2UI content (first 300 chars):', content.substring(0, 300));
-    
+
     // Look for JSON array pattern anywhere in the content
     const jsonArrayMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (jsonArrayMatch) {
       const jsonStr = jsonArrayMatch[0];
       console.log('🔍 Found JSON array pattern');
-      
+
       try {
         const parsed = JSON.parse(jsonStr);
         console.log('🔍 Parsed JSON successfully:', parsed);
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Check if it contains A2UI message structure (v0.9 format)
-          const hasA2UIStructure = parsed.some(msg => 
+          const hasA2UIStructure = parsed.some(msg =>
             msg.createSurface || msg.updateComponents || msg.updateDataModel ||
             msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate  // backward compatibility
           );
@@ -144,7 +144,7 @@ const MessageContent: React.FC<{
         console.log('❌ JSON parse failed:', e);
       }
     }
-    
+
     // Check for pure JSON format (A2UI standard)
     const trimmed = content.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
@@ -153,7 +153,7 @@ const MessageContent: React.FC<{
         console.log('🔍 Parsed pure JSON successfully:', parsed);
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Check if it contains A2UI message structure (v0.9 format)
-          const hasA2UIStructure = parsed.some(msg => 
+          const hasA2UIStructure = parsed.some(msg =>
             msg.createSurface || msg.updateComponents || msg.updateDataModel ||
             msg.beginRendering || msg.surfaceUpdate || msg.dataModelUpdate  // backward compatibility
           );
@@ -165,7 +165,7 @@ const MessageContent: React.FC<{
         console.log('❌ Pure JSON parse failed:', e);
       }
     }
-    
+
     // Check for single JSON object that might be A2UI (but wrong format)
     // This handles cases where AI returns wrong format but still has A2UI keywords
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
@@ -180,13 +180,13 @@ const MessageContent: React.FC<{
         // Not valid JSON, ignore
       }
     }
-    
+
     // Fallback: check for old format with delimiter (backward compatibility)
     if (content.includes('---a2ui_JSON---')) {
       console.log('✅ Old A2UI format detected');
       return true;
     }
-    
+
     console.log('❌ No A2UI content detected');
     return false;
   };
@@ -194,23 +194,23 @@ const MessageContent: React.FC<{
   // Parse A2UI messages from content (A2UI standard format)
   const parseA2UIResponse = (content: string) => {
     console.log('🔍 Parsing A2UI content (first 300 chars):', content.substring(0, 300));
-    
+
     // Try to find and extract JSON array from the content
     const jsonArrayMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (jsonArrayMatch) {
       const jsonStr = jsonArrayMatch[0];
       console.log('🔧 Found JSON array, processing...');
-      
+
       try {
         const a2uiMessages = JSON.parse(jsonStr);
         console.log('✅ Successfully parsed A2UI messages:', a2uiMessages);
-        
+
         // Extract any text before the JSON as textPart
         const beforeJson = content.substring(0, content.indexOf(jsonStr)).trim();
         const textPart = beforeJson.length > 0 ? beforeJson : '';
-        
-        return { 
-          textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart, 
+
+        return {
+          textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart,
           a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [],
           error: null
         };
@@ -219,14 +219,14 @@ const MessageContent: React.FC<{
         return { textPart: 'Failed to parse UI data', a2uiMessages: [], error: 'parse_error' };
       }
     }
-    
+
     // Handle pure JSON format (A2UI standard)
     const trimmed = content.trim();
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
       console.log('🔧 Processing pure JSON array format');
       return parseJSONPart(trimmed, '');
     }
-    
+
     // Handle single JSON object (wrong format, but might be A2UI-like)
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
       try {
@@ -244,7 +244,7 @@ const MessageContent: React.FC<{
         // Not valid JSON, fall through
       }
     }
-    
+
     // Handle old format with delimiter (backward compatibility)
     if (content.includes('---a2ui_JSON---')) {
       console.log('🔧 Processing legacy format with delimiter');
@@ -253,35 +253,35 @@ const MessageContent: React.FC<{
         console.log('❌ Invalid delimiter count:', parts.length);
         return { textPart: content, a2uiMessages: [], error: null };
       }
-      
+
       let textPart = parts[0].trim();
       let jsonPart = parts[1].trim();
-      
+
       console.log('📝 Text part:', textPart);
       console.log('🔧 Raw JSON part:', jsonPart);
-      
+
       // Clean up text part - remove any extra explanations
       const lines = textPart.split('\n').filter(line => line.trim());
       if (lines.length > 0) {
         textPart = lines[0]; // Only keep the first line
       }
-      
+
       // More aggressive JSON cleaning
       // Remove any text before the first [ and after the last ]
       const startIndex = jsonPart.indexOf('[');
       const endIndex = jsonPart.lastIndexOf(']');
-      
+
       if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
         console.error('❌ No valid JSON array found');
         return { textPart: textPart || 'UI generated!', a2uiMessages: [], error: null };
       }
-      
+
       jsonPart = jsonPart.substring(startIndex, endIndex + 1);
       console.log('🧹 Cleaned JSON part:', jsonPart);
-      
+
       return parseJSONPart(jsonPart, textPart);
     }
-    
+
     // Fallback: not A2UI content
     console.log('❌ Content is not A2UI format');
     return { textPart: content, a2uiMessages: [], error: null };
@@ -292,15 +292,15 @@ const MessageContent: React.FC<{
     try {
       const a2uiMessages = JSON.parse(jsonPart);
       console.log('✅ Successfully parsed A2UI messages:', a2uiMessages);
-      return { 
-        textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart, 
+      return {
+        textPart: textPart.length > 100 ? textPart.substring(0, 100) + '...' : textPart,
         a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [],
         error: null
       };
     } catch (error) {
       console.error('❌ Failed to parse A2UI JSON:', error);
       console.error('📄 Problematic JSON:', jsonPart);
-      
+
       // Try to fix common JSON issues
       try {
         // Remove trailing commas and fix common issues
@@ -309,12 +309,12 @@ const MessageContent: React.FC<{
           .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
           .replace(/'/g, '"')      // Replace single quotes with double quotes
           .replace(/(\w+):/g, '"$1":'); // Add quotes to unquoted keys
-        
+
         console.log('🔧 Attempting to fix JSON:', fixedJson);
         const a2uiMessages = JSON.parse(fixedJson);
         console.log('✅ Successfully parsed fixed JSON');
-        return { 
-          textPart: textPart || 'UI generated!', 
+        return {
+          textPart: textPart || 'UI generated!',
           a2uiMessages: Array.isArray(a2uiMessages) ? a2uiMessages : [],
           error: null
         };
@@ -326,43 +326,56 @@ const MessageContent: React.FC<{
   };
 
   // Handle button actions
-  const handleAction = useCallback((action: any) => {
-    console.log('🔘 Button action triggered:', action);
-    
+  // According to A2UI v0.9 spec, action should be sent in client_to_server.json format
+  const handleAction = useCallback((a2uiActionMessage: any) => {
+    console.log('🔘 A2UI action message received:', JSON.stringify(a2uiActionMessage, null, 2));
+
     if (!onSendMessage) {
       console.warn('⚠️ onSendMessage not available, action will be ignored');
       return;
     }
 
-    // Build message based on action
+    // A2UI v0.9 standard format: { action: { name, surfaceId, sourceComponentId, timestamp, context } }
+    // For chat integration, we convert this to a user-friendly text message that includes the action context
+    const action = a2uiActionMessage.action;
+    if (!action) {
+      console.warn('⚠️ Invalid A2UI action message format');
+      return;
+    }
+
+    const { name, context } = action;
+
+    // Build a natural language message from the action
+    // This allows the AI to understand the user's intent while preserving the structured action data
     let messageText = '';
-    
-    if (action.name === 'navigate' || action.name === 'viewDetails' || action.name === 'learnMore') {
-      // For navigation actions, build a descriptive message
-      const context = action.context || {};
-      const itemTitle = context.title || context.name || context.id || 'this item';
-      const itemDescription = context.description || '';
-      
-      if (action.name === 'navigate') {
+
+    if (name === 'navigate' || name === 'viewDetails' || name === 'learnMore') {
+      // For navigation actions, extract item information from context
+      const itemTitle = context?.title || context?.name || context?.website || context?.id || 'this item';
+      const itemDescription = context?.description || context?.details || '';
+
+      if (name === 'navigate') {
         messageText = `Show me more details about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
-      } else if (action.name === 'viewDetails') {
+      } else if (name === 'viewDetails') {
         messageText = `Show detailed information about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
       } else {
         messageText = `Tell me more about ${itemTitle}${itemDescription ? ': ' + itemDescription : ''}`;
       }
     } else {
-      // For other actions, use context to build message
-      const context = action.context || {};
-      const actionDescription = JSON.stringify(context);
-      messageText = `Execute action: ${action.name}${actionDescription ? ' with context: ' + actionDescription : ''}`;
+      // For other actions, describe the action
+      messageText = `Execute action: ${name}`;
     }
 
-    if (messageText) {
-      console.log('📤 Sending message to AI:', messageText);
-      onSendMessage({ text: messageText }).catch(error => {
-        console.error('❌ Failed to send action message:', error);
-      });
-    }
+    // Append the full A2UI action JSON for AI context (A2UI standard format)
+    // This ensures the AI has access to the complete structured action data
+    messageText += `\n\nA2UI Action: ${JSON.stringify(a2uiActionMessage, null, 2)}`;
+
+    console.log('📤 Sending A2UI action to AI:', messageText);
+    console.log('📤 A2UI standard format:', JSON.stringify(a2uiActionMessage, null, 2));
+
+    onSendMessage({ text: messageText }).catch(error => {
+      console.error('❌ Failed to send action message:', error);
+    });
   }, [onSendMessage]);
 
   useEffect(() => {
@@ -395,7 +408,7 @@ const MessageContent: React.FC<{
         textContent: textContent.substring(0, 200) + '...',
         isStreaming
       });
-      
+
       // Clear previous content
       if (contentRef.current) {
         contentRef.current.innerHTML = '';
@@ -404,19 +417,19 @@ const MessageContent: React.FC<{
       // Check if content contains A2UI JSON messages
       const isA2UI = isA2UIContent(textContent);
       console.log('🎯 A2UI detection result:', isA2UI);
-      
+
       if (isA2UI) {
         console.log('🎯 A2UI content detected! Processing...');
         // Process A2UI standard format response
         const { textPart, a2uiMessages, error, originalContent } = parseA2UIResponse(textContent);
-        
+
         console.log('🎯 A2UI processing result:', {
           textPart,
           messageCount: a2uiMessages.length,
           messages: a2uiMessages,
           error
         });
-        
+
         // Handle wrong format error
         if (error === 'wrong_format') {
           console.error('❌ AI returned wrong A2UI format (single object instead of message array)');
@@ -436,7 +449,7 @@ const MessageContent: React.FC<{
           }
           return;
         }
-        
+
         // First render the text part if it exists (but make it smaller since main content is UI)
         if (textPart && textPart.trim() && contentRef.current) {
           const textDiv = document.createElement('div');
@@ -452,7 +465,7 @@ const MessageContent: React.FC<{
             console.error('❌ Failed to create textDiv element');
           }
         }
-        
+
         // Then process A2UI messages using the standard format
         if (a2uiMessages.length > 0) {
           try {
