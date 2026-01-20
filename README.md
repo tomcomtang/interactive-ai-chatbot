@@ -1,6 +1,6 @@
-# AI-Powered Interactive UI Generator
+# AI Interactive Chat UI
 
-A modern web application that generates dynamic, interactive user interfaces through natural language conversations with AI. Built with Astro and React, featuring a beautiful glassmorphism design and real-time UI rendering.
+An AI conversational platform with interactive UI components. Enables structured bidirectional interactions through text and UI, dramatically improving efficiency.
 
 ## Features
 
