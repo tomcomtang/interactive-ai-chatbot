@@ -14,6 +14,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -114,27 +115,36 @@
   flex-wrap: wrap;
   gap: 16px;
   align-items: flex-start;
-  width: 100%; /* Ensure Row takes full width */
+  width: 100%;
+  /* Ensure Row takes full width */
 }
 
 /* Equal width distribution for Cards in Row - smart space allocation */
-.a2ui-row > .a2ui-card {
-  flex: 1 1 0; /* Force equal distribution */
-  min-width: 0; /* Allow shrinking */
-  width: calc((100% - 32px) / 3); /* Manual width calculation: total width minus 2 gaps (16px*2) divided by 3 */
-  box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+.a2ui-row>.a2ui-card {
+  flex: 1 1 0;
+  /* Force equal distribution */
+  min-width: 0;
+  /* Allow shrinking */
+  width: calc((100% - 32px) / 3);
+  /* Manual width calculation: total width minus 2 gaps (16px*2) divided by 3 */
+  box-sizing: border-box;
+  /* Ensure padding doesn't affect width calculation */
 }
 
 /* Equal width distribution for Columns in Row - for statistics and similar scenarios */
-.a2ui-row > .a2ui-column {
-  flex: 1 1 0; /* Force equal distribution */
-  min-width: 0; /* Allow shrinking */
-  text-align: center; /* Center statistics display */
+.a2ui-row>.a2ui-column {
+  flex: 1 1 0;
+  /* Force equal distribution */
+  min-width: 0;
+  /* Allow shrinking */
+  text-align: center;
+  /* Center statistics display */
 }
 
 /* Buttons in Row should maintain auto width, not stretch */
-.a2ui-row > .a2ui-button {
-  flex: 0 0 auto; /* Don't stretch, maintain content width */
+.a2ui-row>.a2ui-button {
+  flex: 0 0 auto;
+  /* Don't stretch, maintain content width */
   width: auto !important;
 }
 
@@ -168,11 +178,12 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: flex-start; /* Default to left align, not stretch */
+  align-items: flex-start;
+  /* Default to left align, not stretch */
 }
 
 /* Button in Column should not stretch */
-.a2ui-column > .a2ui-button {
+.a2ui-column>.a2ui-button {
   align-self: flex-start;
   width: auto !important;
 }
@@ -190,7 +201,8 @@
 }
 
 .a2ui-column.align-stretch {
-  align-items: stretch; /* Only when explicitly set to stretch */
+  align-items: stretch;
+  /* Only when explicitly set to stretch */
 }
 
 .a2ui-column.align-spaceBetween {
@@ -219,24 +231,28 @@
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Add gap between card children */
+  gap: 8px;
+  /* Add gap between card children */
 }
 
 /* Text spacing in Card */
-.a2ui-card > .a2ui-text {
-  margin-bottom: 0; /* Reset default margin, use gap instead */
+.a2ui-card>.a2ui-text {
+  margin-bottom: 0;
+  /* Reset default margin, use gap instead */
 }
 
 /* Ensure proper spacing between title and description in Card */
-.a2ui-card > .a2ui-text.text-h3,
-.a2ui-card > .a2ui-text.text-h4,
-.a2ui-card > .a2ui-text.text-h5 {
-  margin-bottom: 4px; /* Small gap after title */
+.a2ui-card>.a2ui-text.text-h3,
+.a2ui-card>.a2ui-text.text-h4,
+.a2ui-card>.a2ui-text.text-h5 {
+  margin-bottom: 4px;
+  /* Small gap after title */
 }
 
-.a2ui-card > .a2ui-text.text-medium {
+.a2ui-card>.a2ui-text.text-medium {
   margin-top: 0;
-  color: rgba(255, 255, 255, 0.7); /* Lighter color for body text */
+  color: rgba(255, 255, 255, 0.7);
+  /* Lighter color for body text */
   line-height: 1.6;
 }
 
@@ -269,7 +285,8 @@
 
 /* Button */
 .a2ui-button {
-  display: inline-block; /* Allow button to have auto width */
+  display: inline-block;
+  /* Allow button to have auto width */
   padding: 8px 16px;
   border-radius: 14px;
   font-size: 0.875rem;
@@ -279,18 +296,21 @@
   border: none;
   outline: none;
   font-family: inherit;
-  width: auto; /* Auto width, not full width */
-  min-width: auto; /* No minimum width constraint */
+  width: auto;
+  /* Auto width, not full width */
+  min-width: auto;
+  /* No minimum width constraint */
   /* Default background - dark theme */
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  align-self: flex-start; /* Don't stretch in Column */
+  align-self: flex-start;
+  /* Don't stretch in Column */
 }
 
 /* Button in Card should not stretch */
-.a2ui-card > .a2ui-button {
+.a2ui-card>.a2ui-button {
   align-self: flex-start;
   width: auto !important;
   max-width: 100%;
@@ -394,23 +414,25 @@ textarea.a2ui-textfield-input {
 /* TextField layout optimization in Row */
 .a2ui-row .a2ui-textfield-container {
   flex: 1 1 0 !important;
-  min-width: 0 !important; /* Allow shrinking */
-  width: auto !important; /* Override default width: 100% */
+  min-width: 0 !important;
+  /* Allow shrinking */
+  width: auto !important;
+  /* Override default width: 100% */
 }
 
 /* Ensure proper spacing between TextFields in Row */
-.a2ui-row .a2ui-textfield-container + .a2ui-textfield-container {
+.a2ui-row .a2ui-textfield-container+.a2ui-textfield-container {
   margin-left: 16px;
 }
 
 /* Spacing between Rows in forms */
-.a2ui-card .a2ui-row + .a2ui-row {
+.a2ui-card .a2ui-row+.a2ui-row {
   margin-top: 20px;
 }
 
 /* Spacing between Rows and other elements in forms */
-.a2ui-card .a2ui-row + .a2ui-textfield-container,
-.a2ui-card .a2ui-row + .a2ui-checkbox-container {
+.a2ui-card .a2ui-row+.a2ui-textfield-container,
+.a2ui-card .a2ui-row+.a2ui-checkbox-container {
   margin-top: 20px;
 }
 
@@ -630,12 +652,14 @@ textarea.a2ui-textfield-input {
   overflow: hidden;
   background: rgba(0, 0, 0, 0.5);
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%;
+  /* 16:9 aspect ratio */
   height: 0;
 }
 
 .a2ui-video-container.a2ui-video-youtube {
-  padding-bottom: 56.25%; /* 16:9 aspect ratio for YouTube */
+  padding-bottom: 56.25%;
+  /* 16:9 aspect ratio for YouTube */
 }
 
 .a2ui-video-iframe {
@@ -1185,7 +1209,7 @@ textarea.a2ui-textfield-input {
   }
 
   /* Tablet: 2 cards per row */
-  .a2ui-row > .a2ui-card {
+  .a2ui-row>.a2ui-card {
     flex: 1 1 calc(50% - 8px);
     min-width: calc(50% - 8px);
   }
@@ -1204,8 +1228,8 @@ textarea.a2ui-textfield-input {
     flex: 1 1 100%;
     margin-left: 0 !important;
   }
-  
-  .a2ui-row .a2ui-textfield-container + .a2ui-textfield-container {
+
+  .a2ui-row .a2ui-textfield-container+.a2ui-textfield-container {
     margin-top: 16px;
   }
 
@@ -1231,11 +1255,8 @@ textarea.a2ui-textfield-input {
   }
 
   /* Small screens: single column display */
-  .a2ui-row > .a2ui-card {
+  .a2ui-row>.a2ui-card {
     flex: 1 1 100%;
     min-width: 100%;
-  }
-}
-    font-size: 0.8125rem;
   }
 }
