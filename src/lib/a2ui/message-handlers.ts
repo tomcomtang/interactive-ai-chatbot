@@ -43,8 +43,9 @@ export class MessageHandlers {
    * Handle createSurface message (v0.9 format)
    */
   handleCreateSurface(data: A2UICreateSurfaceMessage['createSurface']): void {
-    const { surfaceId, catalogId } = data;
-    
+    let { surfaceId, catalogId } = data;
+    if (surfaceId == null || String(surfaceId) === 'undefined') surfaceId = 'main';
+
     // Create surface container
     const surfaceElement = document.createElement('div');
     surfaceElement.className = 'a2ui-surface';
@@ -66,8 +67,9 @@ export class MessageHandlers {
    * Handle updateComponents message (v0.9 format)
    */
   handleUpdateComponents(data: A2UIUpdateComponentsMessage['updateComponents']): void {
-    const { surfaceId, components } = data;
-    
+    let { surfaceId, components } = data;
+    if (surfaceId == null || String(surfaceId) === 'undefined') surfaceId = 'main';
+
     const surface = this.surfaces.get(surfaceId);
     if (!surface) {
       console.error(`❌ Surface not found: ${surfaceId}`);

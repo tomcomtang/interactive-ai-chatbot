@@ -66,7 +66,8 @@ export function createButtonElement(
       // A2UI v0.9: Check for event (server-side action)
       if (action.event) {
         const surfaceElement = element.closest('[data-surface-id]');
-        const resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
+        let resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
+        if (resolvedSurfaceId === 'undefined' || resolvedSurfaceId == null) resolvedSurfaceId = 'main';
         const sourceComponentId = id;
         const timestamp = new Date().toISOString();
         
@@ -124,8 +125,9 @@ export function createButtonElement(
         
         // Otherwise, treat as server event
         const surfaceElement = element.closest('[data-surface-id]');
-        const resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
-        
+        let resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
+        if (resolvedSurfaceId === 'undefined' || resolvedSurfaceId == null) resolvedSurfaceId = 'main';
+
         const a2uiActionMessage = {
           userAction: {
             name: action.name,

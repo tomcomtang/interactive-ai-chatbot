@@ -1,12 +1,12 @@
 /**
- * A2UI-compatible API route using Google Gemini API
- * Follows the exact same approach as A2UI official implementation
+ * A2UI-compatible API route using DeepSeek API (OpenAI-compatible)
+ * Same request/response contract as before; only the backing model is switched from Gemini to DeepSeek.
  * Reference: A2UI/a2a_agents/python/a2ui_extension/src/a2ui/send_a2ui_to_client_toolset.py
  */
 
 import type { APIRoute } from 'astro';
 import { convertToModelMessages, type UIMessage } from 'ai';
-import { GoogleGenAI, Type } from '@google/genai';
+import OpenAI from 'openai';
 import a2uiSchema from '../../lib/a2ui-schema.json';
 
 // Load A2UI Schema (already wrapped as array in the JSON file, like A2UI)
@@ -294,50 +294,43 @@ export const POST: APIRoute = async ({ request }) => {
     const isUI = userAction ? true : isUIRequest(lastMessageText);
 
     // Try multiple ways to get API key (support different deployment environments)
-    const apiKey = process.env.GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+    const apiKey = process.env.DEEPSEEK_API_KEY || import.meta.env.DEEPSEEK_API_KEY;
     
     if (!apiKey) {
-      console.error('❌ GEMINI_API_KEY not found. Available env vars:', {
-        'process.env.GEMINI_API_KEY': !!process.env.GEMINI_API_KEY,
-        'import.meta.env.GEMINI_API_KEY': !!import.meta.env.GEMINI_API_KEY
+      console.error('❌ DEEPSEEK_API_KEY not found. Available env vars:', {
+        'process.env.DEEPSEEK_API_KEY': !!process.env.DEEPSEEK_API_KEY,
+        'import.meta.env.DEEPSEEK_API_KEY': !!import.meta.env.DEEPSEEK_API_KEY
       });
-      // Return user-friendly error message about insufficient balance
       return new Response(JSON.stringify({
         error: 'Insufficient Balance',
         message: 'Insufficient balance. Unable to call AI service. Please check your account balance.',
         details: {
           code: 402,
-          suggestion: 'Please check your account balance and ensure you have sufficient credits to use the AI service.'
+          suggestion: 'Please set DEEPSEEK_API_KEY (e.g. at https://platform.deepseek.com) and ensure you have sufficient credits.'
         }
       }), {
         status: 402,
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
-    // Initialize Google GenAI
-    const genAI = new GoogleGenAI({ apiKey });
+    const client = new OpenAI({ apiKey, baseURL: 'https://api.deepseek.com' });
 
-    // Build message list
-    const apiMessages: any[] = [];
+    // Build message list for OpenAI/DeepSeek: { role, content }[]
+    const openaiMessages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [];
     
     if (isUI) {
       const a2uiSchema = getA2UISchema();
       let systemPrompt = createA2UISystemPrompt(a2uiSchema);
 
       if (userAction) {
-        // A2UI-style: request is only the userAction; model must return updateComponents for detail view
         const { name, surfaceId, context } = userAction;
         const actionPrompt = `The user clicked a button. userAction: name="${name}", surfaceId="${surfaceId}". context: ${JSON.stringify(context || {})}.
 
 You MUST respond with an A2UI JSON array of two messages: (1) createSurface with surfaceId "${surfaceId}" and catalogId "standard-catalog", (2) updateComponents for surfaceId "${surfaceId}" with a DETAIL VIEW ONLY: one root Column containing one Card with the full description text from context (use context.description or context.fullDescription or context.full_description) and a Button "Back" or "Close". Do NOT return the full list. The components array must have id "root" and only the detail content.`;
         systemPrompt += `\n\n## When the request is a button action (viewDetails, showFullDescription, etc.):\n${actionPrompt}`;
-        apiMessages.push({ role: 'user', parts: [{ text: actionPrompt }] });
+        openaiMessages.push({ role: 'user', content: actionPrompt });
       } else {
-        // Normal UI request: add history (skip A2UI JSON), then current user message
         modelMessages.slice(0, -1).forEach((msg: any) => {
           if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
             let msgContent = '';
@@ -348,8 +341,8 @@ You MUST respond with an A2UI JSON array of two messages: (1) createSurface with
             }
             if (msgContent && isA2UIJSON(msgContent)) return;
             if (msgContent) {
-              const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
-              apiMessages.push({ role: geminiRole, parts: [{ text: msgContent }] });
+              const role = (msg.role === 'assistant' || msg.role === 'model') ? 'assistant' : 'user';
+              openaiMessages.push({ role, content: msgContent });
             }
           }
         });
@@ -361,180 +354,113 @@ You MUST respond with an A2UI JSON array of two messages: (1) createSurface with
             const textPart = currentUserMsg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
             userContent = textPart?.text || '';
           }
-          if (userContent) apiMessages.push({ role: 'user', parts: [{ text: userContent }] });
+          if (userContent) openaiMessages.push({ role: 'user', content: userContent });
         }
       }
 
-      // Define Function Tool (exactly like A2UI)
-      const tools: any[] = [
+      const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
         {
-          functionDeclarations: [
-            {
-              name: 'send_a2ui_json_to_client',
-              description: 'Sends A2UI JSON to the client to render rich UI for the user. This tool can be called multiple times in the same call to render multiple UI surfaces. Args: a2ui_json: Valid A2UI JSON Schema to send to the client. The A2UI JSON Schema definition is between ---BEGIN A2UI JSON SCHEMA--- and ---END A2UI JSON SCHEMA--- in the system instructions.',
-              parameters: {
-                type: Type.OBJECT,
-                properties: {
-                  a2ui_json: {
-                    type: Type.STRING,
-                    description: 'valid A2UI JSON Schema to send to the client.'
-                  }
-                },
-                required: ['a2ui_json']
-              }
-            }
-          ]
-        }
+          type: 'function',
+          function: {
+            name: 'send_a2ui_json_to_client',
+            description: 'Sends A2UI JSON to the client to render rich UI for the user. This tool can be called multiple times in the same call to render multiple UI surfaces. Args: a2ui_json: Valid A2UI JSON Schema to send to the client. The A2UI JSON Schema definition is between ---BEGIN A2UI JSON SCHEMA--- and ---END A2UI JSON SCHEMA--- in the system instructions.',
+            parameters: {
+              type: 'object',
+              properties: {
+                a2ui_json: { type: 'string', description: 'Valid A2UI JSON Schema to send to the client.' },
+              },
+              required: ['a2ui_json'],
+            },
+          },
+        },
       ];
 
+      const chatMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+        { role: 'system', content: systemPrompt },
+        ...openaiMessages,
+      ];
 
-      // Validate all messages have valid roles before sending
-      const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');
-      if (invalidMessages.length > 0) {
-        console.error('❌ Invalid message roles found:', invalidMessages);
-        throw new Error(`Invalid message roles: ${invalidMessages.map(m => m.role).join(', ')}. Only 'user' and 'model' are allowed.`);
-      }
-
-      // Call Gemini API (exactly like A2UI)
-      const model = genAI.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        contents: apiMessages,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.05,
-          tools: tools,
-        }
+      const response = await client.chat.completions.create({
+        model: 'deepseek-reasoner',
+        messages: chatMessages,
+        temperature: 0.05,
+        tools,
+        tool_choice: 'auto',
       });
 
-      const response = await model;
-
-      // Process function call response (exactly like A2UI)
-      const candidates = response.candidates;
-      if (!candidates || candidates.length === 0) {
-        throw new Error('No candidates in response');
+      const choice = response.choices?.[0];
+      if (!choice?.message) {
+        throw new Error('No message in DeepSeek response');
       }
 
-      const candidate = candidates[0];
-      const functionCalls = candidate.content?.parts?.filter((part: any) => part.functionCall) || [];
+      const toolCalls = choice.message.tool_calls;
+      const a2uiCall = toolCalls?.find((tc: any) => tc.function?.name === 'send_a2ui_json_to_client');
 
-      if (functionCalls.length > 0) {
-        // Found function call
-        const a2uiFunctionCall = functionCalls.find((fc: any) => 
-          fc.functionCall?.name === 'send_a2ui_json_to_client'
-        );
-
-              if (a2uiFunctionCall?.functionCall?.args?.a2ui_json) {
-                const a2uiJsonStr = a2uiFunctionCall.functionCall.args.a2ui_json;
-                const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
-                const finalContent = JSON.stringify(a2uiMessages);
-          
-          // 打印AI返回给前端的JSON数据
+      if (a2uiCall?.function?.arguments) {
+        let args: { a2ui_json?: string };
+        try {
+          args = typeof a2uiCall.function.arguments === 'string'
+            ? JSON.parse(a2uiCall.function.arguments)
+            : a2uiCall.function.arguments;
+        } catch (e) {
+          throw new Error('Failed to parse send_a2ui_json_to_client arguments');
+        }
+        const a2uiJsonStr = args.a2ui_json;
+        if (a2uiJsonStr) {
+          const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
+          const finalContent = JSON.stringify(a2uiMessages);
           console.log('📤 AI返回给前端的JSON数据 (A2UI):');
           console.log(JSON.stringify(a2uiMessages, null, 2));
-          
-          // Return as AI SDK format
-          return new Response(
-            `0:${JSON.stringify({ type: 'text', text: finalContent })}\n`,
-            {
-              headers: {
-                'Content-Type': 'text/plain; charset=utf-8',
-                ...corsHeaders,
-              },
-            }
-          );
+          return new Response(`0:${JSON.stringify({ type: 'text', text: finalContent })}\n`, {
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders },
+          });
         }
       }
 
-      // No function call, return text content
-      const textContent = candidate.content?.parts
-        ?.filter((part: any) => part.text)
-        ?.map((part: any) => part.text)
-        ?.join('') || '';
-
-      // 打印AI返回给前端的文本数据
+      const textContent = choice.message.content ?? '';
       console.log('📤 AI返回给前端的数据 (文本):');
       console.log(textContent);
-
-      return new Response(
-        `0:${JSON.stringify({ type: 'text', text: textContent })}\n`,
-        {
-          headers: {
-            'Content-Type': 'text/plain; charset=utf-8',
-            ...corsHeaders,
-          },
-        }
-      );
-
+      return new Response(`0:${JSON.stringify({ type: 'text', text: textContent })}\n`, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders },
+      });
     } else {
-      // Non-UI request: Normal conversation
+      // Non-UI request: normal conversation (no tools)
       modelMessages.forEach((msg: any) => {
-        // Handle all possible role values: 'user', 'assistant', 'model', 'system'
         if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
           let msgContent = '';
-          if (typeof msg.content === 'string') {
-            msgContent = msg.content;
-          } else if (Array.isArray(msg.content)) {
+          if (typeof msg.content === 'string') msgContent = msg.content;
+          else if (Array.isArray(msg.content)) {
             const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
             msgContent = textPart?.text || '';
           }
-          
-          // Skip A2UI JSON responses - they are for UI rendering, not conversation history
-          if (msgContent && isA2UIJSON(msgContent)) {
-            return; // Skip this message
-          }
-          
+          if (msgContent && isA2UIJSON(msgContent)) return;
           if (msgContent) {
-            // Google Gemini API only accepts 'user' or 'model', not 'assistant'
-            const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
-            apiMessages.push({
-              role: geminiRole,
-              parts: [{ text: msgContent }]
-            });
+            const role = (msg.role === 'assistant' || msg.role === 'model') ? 'assistant' : 'user';
+            openaiMessages.push({ role, content: msgContent });
           }
         } else {
           console.warn(`⚠️ Skipping message with unknown role: ${msg.role}`);
         }
       });
 
-      // Validate all messages have valid roles before sending
-      const invalidMessages = apiMessages.filter(m => m.role !== 'user' && m.role !== 'model');
-      if (invalidMessages.length > 0) {
-        console.error('❌ Invalid message roles found:', invalidMessages);
-        throw new Error(`Invalid message roles: ${invalidMessages.map(m => m.role).join(', ')}. Only 'user' and 'model' are allowed.`);
-      }
-
-      const model = genAI.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
-        contents: apiMessages,
-        config: {
-          temperature: 0.7,
-        }
+      const chatMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [...openaiMessages];
+      const response = await client.chat.completions.create({
+        model: 'deepseek-reasoner',
+        messages: chatMessages,
+        temperature: 0.7,
       });
 
-      const response = await model;
-      const candidates = response.candidates;
-      if (!candidates || candidates.length === 0) {
-        throw new Error('No candidates in response');
+      const choice = response.choices?.[0];
+      if (!choice?.message) {
+        throw new Error('No message in DeepSeek response');
       }
+      const textContent = choice.message.content ?? '';
 
-      const textContent = candidates[0].content?.parts
-        ?.filter((part: any) => part.text)
-        ?.map((part: any) => part.text)
-        ?.join('') || '';
-
-      // 打印AI返回给前端的数据 (非UI请求)
       console.log('📤 AI返回给前端的数据 (普通对话):');
       console.log(textContent);
-
-      return new Response(
-        `0:${JSON.stringify({ type: 'text', text: textContent })}\n`,
-        {
-          headers: {
-            'Content-Type': 'text/plain; charset=utf-8',
-            ...corsHeaders,
-          },
-        }
-      );
+      return new Response(`0:${JSON.stringify({ type: 'text', text: textContent })}\n`, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8', ...corsHeaders },
+      });
     }
 
         } catch (error: any) {
@@ -542,14 +468,12 @@ You MUST respond with an A2UI JSON array of two messages: (1) createSurface with
           console.error('❌ Error stack:', error?.stack);
           console.error('❌ Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
 
-          // Extract detailed error from Google GenAI or other sources
           const apiError = error?.error || error?.response?.error || error;
           let apiErrorMessage = apiError?.message || error?.message || String(error);
           const apiErrorCode = apiError?.code || error?.status || error?.statusCode || 500;
           
-          // Add more context for common errors
-          if (apiErrorMessage.includes('GEMINI_API_KEY')) {
-            apiErrorMessage = 'Insufficient balance. Unable to call AI service. Please check your account balance.';
+          if (apiErrorMessage.includes('DEEPSEEK_API_KEY') || apiErrorMessage.includes('API key') || apiErrorMessage.includes('api_key')) {
+            apiErrorMessage = 'Insufficient balance or invalid API key. Unable to call AI service. Please check DEEPSEEK_API_KEY and balance.';
           } else if (apiErrorMessage.includes('schema')) {
             apiErrorMessage = `Schema loading error: ${apiErrorMessage}. Please ensure a2ui-schema.json exists in src/lib/`;
           } else if (apiErrorMessage.includes('ENOENT')) {
@@ -603,9 +527,9 @@ You MUST respond with an A2UI JSON array of two messages: (1) createSurface with
               fullError: error,
               // Include helpful info based on error type
               suggestion: (apiErrorCode === 403 || apiErrorCode === 401 || apiErrorMessage?.includes('API key'))
-                ? 'Please check your GEMINI_API_KEY at https://aistudio.google.com/'
+                ? 'Please set DEEPSEEK_API_KEY (get key at https://platform.deepseek.com) and ensure you have sufficient credits.'
                 : (apiErrorCode === 429 || apiErrorMessage?.includes('quota'))
-                ? `Quota exceeded. ${quotaInfo ? `(${quotaInfo})` : ''} ${retryDelay ? `Please retry in ${Math.ceil(retryDelay)} seconds.` : 'Please wait and try again later.'} Free tier limit: 20 requests per day. Upgrade at https://ai.google.dev/pricing`
+                ? `Quota exceeded. ${quotaInfo ? `(${quotaInfo})` : ''} ${retryDelay ? `Please retry in ${Math.ceil(retryDelay)} seconds.` : 'Please wait and try again later.'}`
                 : (apiErrorCode === 503 || apiErrorMessage?.includes('overloaded') || apiErrorMessage?.includes('UNAVAILABLE'))
                 ? `Service temporarily unavailable. The AI model is currently overloaded. ${retryDelay ? `Please retry in ${Math.ceil(retryDelay)} seconds.` : 'Please wait a moment and try again.'}`
                 : undefined,
