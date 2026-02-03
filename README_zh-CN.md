@@ -21,11 +21,13 @@ npm install
 
 ### 2. 配置环境变量
 
-在项目根目录创建 `.env` 文件：
+在项目根目录创建 `.env` 或 `.env.local` 文件：
 
 ```env
-GEMINI_API_KEY=your_api_key_here
+DEEPSEEK_API_KEY=your_api_key_here
 ```
+
+API 密钥请在 [DeepSeek 控制台](https://platform.deepseek.com) 获取。部署到 EdgeOne Pages 时，请在 EdgeOne 控制台的环境变量中配置 `DEEPSEEK_API_KEY`。
 
 ### 3. 启动开发服务器
 
@@ -70,7 +72,7 @@ npm run preview
 ## 工作原理
 
 1. **用户输入**：用户输入自然语言请求（例如："显示一个顶级网站列表"）
-2. **AI 处理**：请求被发送到 Google Gemini API，带有结构化输出约束
+2. **AI 处理**：请求被发送到 DeepSeek API，带有结构化输出约束
 3. **UI 生成**：AI 返回描述 UI 组件的 JSON 结构
 4. **渲染**：渲染器解析 JSON 并创建交互式 React 组件
 5. **交互**：用户可以与生成的组件交互（按钮、表单等）
@@ -90,7 +92,7 @@ npm run preview
 - **框架**：Astro 4.x（SSR 模式）
 - **UI 库**：React 19
 - **语言**：TypeScript
-- **AI**：Google Gemini API
+- **AI**：DeepSeek API
 - **样式**：CSS 玻璃拟态效果
 
 ## 开发
@@ -104,6 +106,7 @@ npm run preview
 ### 自定义样式
 
 修改 `src/styles/a2ui.css` 以自定义组件外观。设计使用：
+
 - 玻璃拟态效果（backdrop-filter、透明度）
 - 紫色配色方案（#6432e6, #e62e8b）
 - 暗色背景（#0a0a0a）

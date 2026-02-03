@@ -39,7 +39,11 @@ export default defineConfig({
   vite: {
     envDir: __dirname,
     define: {
+      // Client / some server builds replace import.meta.env
       'import.meta.env.DEEPSEEK_API_KEY': JSON.stringify(localEnv.DEEPSEEK_API_KEY ?? ''),
+      // EdgeOne/Astro SSR turns import.meta.env into process.env; define only affects literals,
+      // so we inline process.env.DEEPSEEK_API_KEY here so .env is applied at build time
+      'process.env.DEEPSEEK_API_KEY': JSON.stringify(localEnv.DEEPSEEK_API_KEY ?? ''),
     },
-  },
+  }
 });

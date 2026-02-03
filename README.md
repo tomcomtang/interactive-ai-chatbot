@@ -21,11 +21,13 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` or `.env.local` file in the root directory:
 
 ```env
-GEMINI_API_KEY=your_api_key_here
+DEEPSEEK_API_KEY=your_api_key_here
 ```
+
+Get your API key at [DeepSeek Platform](https://platform.deepseek.com). For EdgeOne Pages deployment, set `DEEPSEEK_API_KEY` in the EdgeOne Console under Environment Variables.
 
 ### 3. Start Development Server
 
@@ -70,7 +72,7 @@ npm run preview
 ## How It Works
 
 1. **User Input**: User types a natural language request (e.g., "Show me a list of top websites")
-2. **AI Processing**: The request is sent to Google Gemini API with structured output constraints
+2. **AI Processing**: The request is sent to DeepSeek API with structured output constraints
 3. **UI Generation**: AI returns a JSON structure describing UI components
 4. **Rendering**: The renderer parses the JSON and creates interactive React components
 5. **Interaction**: Users can interact with generated components (buttons, forms, etc.)
@@ -90,7 +92,7 @@ npm run preview
 - **Framework**: Astro 4.x (SSR mode)
 - **UI Library**: React 19
 - **Language**: TypeScript
-- **AI**: Google Gemini API
+- **AI**: DeepSeek API
 - **Styling**: CSS with glassmorphism effects
 
 ## Development
@@ -104,6 +106,7 @@ npm run preview
 ### Customizing Styles
 
 Modify `src/styles/a2ui.css` to customize component appearance. The design uses:
+
 - Glassmorphism effects (backdrop-filter, transparency)
 - Purple color scheme (#6432e6, #e62e8b)
 - Dark background (#0a0a0a)
