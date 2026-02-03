@@ -106,111 +106,106 @@
   margin: 0 8px;
 }
 
-/* ============= Layout Components ============= */
+/* ============= Layout Components (A2UI-aligned) ============= */
+/* Ref: A2UI renderers/lit row.ts, card.ts, column.ts; renderers/angular catalog */
 
-/* Row */
+/* Row - same structure as A2UI: :host flex, inner section row with width 100%, min-height 100% */
 .a2ui-row {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-start;
-  width: 100%;
-  /* Ensure Row takes full width */
-}
-
-/* Equal width distribution for Cards in Row - smart space allocation */
-.a2ui-row>.a2ui-card {
-  flex: 1 1 0;
-  /* Force equal distribution */
-  min-width: 0;
-  /* Allow shrinking */
-  width: calc((100% - 32px) / 3);
-  /* Manual width calculation: total width minus 2 gaps (16px*2) divided by 3 */
+  flex: var(--weight, 1);
   box-sizing: border-box;
-  /* Ensure padding doesn't affect width calculation */
 }
 
-/* Equal width distribution for Columns in Row - for statistics and similar scenarios */
-.a2ui-row>.a2ui-column {
+.a2ui-row > * {
+  box-sizing: border-box;
+}
+
+/* A2UI Row section: flex row, width 100%, min-height 100%. Default alignment=stretch, distribution=start */
+.a2ui-row {
+  flex-direction: row;
+  width: 100%;
+  min-height: 100%;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: start;
+}
+
+/* alignment = cross axis (align-items). A2UI default stretch */
+.a2ui-row.align-start { align-items: start; }
+.a2ui-row.align-center { align-items: center; }
+.a2ui-row.align-end { align-items: end; }
+.a2ui-row.align-stretch { align-items: stretch; }
+
+/* distribution = main axis (justify-content). A2UI default start */
+.a2ui-row.distribute-start { justify-content: start; }
+.a2ui-row.distribute-center { justify-content: center; }
+.a2ui-row.distribute-end { justify-content: end; }
+.a2ui-row.distribute-spaceBetween { justify-content: space-between; }
+.a2ui-row.distribute-spaceAround { justify-content: space-around; }
+.a2ui-row.distribute-spaceEvenly { justify-content: space-evenly; }
+
+/* Cards in Row: equal width + stretch height (A2UI Card: flex var(--weight), min-height 0) */
+.a2ui-row > .a2ui-card {
   flex: 1 1 0;
-  /* Force equal distribution */
   min-width: 0;
-  /* Allow shrinking */
-  text-align: center;
-  /* Center statistics display */
-}
-
-/* Buttons in Row should maintain auto width, not stretch */
-.a2ui-row>.a2ui-button {
-  flex: 0 0 auto;
-  /* Don't stretch, maintain content width */
-  width: auto !important;
-}
-
-.a2ui-row.align-start {
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-
-.a2ui-row.align-center {
-  justify-content: center;
-  align-items: center;
-}
-
-.a2ui-row.align-end {
-  justify-content: flex-end;
-  align-items: flex-end;
-}
-
-.a2ui-row.align-spaceBetween {
-  justify-content: space-between;
-  align-items: center;
-}
-
-.a2ui-row.align-spaceAround {
-  justify-content: space-around;
-  align-items: center;
-}
-
-/* Column */
-.a2ui-column {
+  min-height: 0;
+  align-self: stretch;
+  /* Card as flex column so slotted content can use height 100%; button at bottom */
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
-  /* Default to left align, not stretch */
 }
 
-/* Button in Column should not stretch */
-.a2ui-column>.a2ui-button {
-  align-self: flex-start;
+/* A2UI Card section > * { height: 100%; width: 100% } - first child fills; we push button to bottom */
+.a2ui-row > .a2ui-card > .a2ui-button {
+  margin-top: auto;
+}
+
+/* Same-height images in row cards (visual alignment like A2UI samples) */
+.a2ui-row .a2ui-card .a2ui-image {
+  width: 100%;
+  height: 120px;
+  min-height: 120px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.a2ui-row > .a2ui-column {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.a2ui-row > .a2ui-button {
+  flex: 0 0 auto;
   width: auto !important;
 }
 
-.a2ui-column.align-start {
-  align-items: flex-start;
+/* Column - A2UI: flex column, min-width 100%, height 100%; align-* / distribute-* */
+.a2ui-column {
+  display: flex;
+  flex: var(--weight, 1);
+  flex-direction: column;
+  min-width: 100%;
+  height: 100%;
+  gap: 12px;
+  box-sizing: border-box;
 }
 
-.a2ui-column.align-center {
-  align-items: center;
-}
+.a2ui-column.align-start { align-items: start; }
+.a2ui-column.align-center { align-items: center; }
+.a2ui-column.align-end { align-items: end; }
+.a2ui-column.align-stretch { align-items: stretch; }
 
-.a2ui-column.align-end {
-  align-items: flex-end;
-}
+.a2ui-column.distribute-start { justify-content: start; }
+.a2ui-column.distribute-center { justify-content: center; }
+.a2ui-column.distribute-end { justify-content: end; }
+.a2ui-column.distribute-spaceBetween { justify-content: space-between; }
+.a2ui-column.distribute-spaceAround { justify-content: space-around; }
+.a2ui-column.distribute-spaceEvenly { justify-content: space-evenly; }
 
-.a2ui-column.align-stretch {
-  align-items: stretch;
-  /* Only when explicitly set to stretch */
-}
-
-.a2ui-column.align-spaceBetween {
-  justify-content: space-between;
-}
-
-.a2ui-column.align-spaceAround {
-  justify-content: space-around;
+.a2ui-column > .a2ui-button {
+  align-self: flex-start;
+  width: auto !important;
 }
 
 /* List */
@@ -221,18 +216,21 @@
   /* Completely remove scroll functionality, let content expand naturally */
 }
 
-/* Card */
+/* Card - A2UI: flex var(--weight), min-height 0, overflow auto */
 .a2ui-card {
+  flex: var(--weight, 1);
+  min-height: 0;
+  overflow: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 16px;
   transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  /* Add gap between card children */
 }
 
 /* Text spacing in Card */

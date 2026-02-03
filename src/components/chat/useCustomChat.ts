@@ -14,10 +14,17 @@ export interface ChatMessage {
 
 export type ChatStatus = 'ready' | 'streaming' | 'submitted' | 'error';
 
+/** Same as A2UI: actions (e.g. Details click) are sent as userAction only, not shown as a user message in the list. */
+export interface SendMessageParams {
+  text: string;
+  /** When true, do not add a user message; send body.userAction instead. Used for button actions. */
+  isAction?: boolean;
+}
+
 export interface UseCustomChatReturn {
   messages: ChatMessage[];
   status: ChatStatus;
-  sendMessage: (message: { text: string }) => Promise<void>;
+  sendMessage: (message: SendMessageParams) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -26,10 +33,11 @@ export function useCustomChat(): UseCustomChatReturn {
   const [status, setStatus] = useState<ChatStatus>('ready');
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const sendMessage = useCallback(async (message: { text: string }) => {
+  const sendMessage = useCallback(async (message: SendMessageParams) => {
     if (!message.text.trim()) return;
 
-    // Add user message
+    const isAction = message.isAction === true;
+
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -37,10 +45,13 @@ export function useCustomChat(): UseCustomChatReturn {
       parts: [{ type: 'text', text: message.text }]
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // A2UI-style: do not add user message for button actions (no raw JSON in the list)
+    if (!isAction) {
+      setMessages(prev => [...prev, userMessage]);
+    }
+
     setStatus('submitted');
 
-    // Create assistant message placeholder
     const assistantMessageId = `assistant-${Date.now()}`;
     const assistantMessage: ChatMessage = {
       id: assistantMessageId,
@@ -52,23 +63,29 @@ export function useCustomChat(): UseCustomChatReturn {
     setMessages(prev => [...prev, assistantMessage]);
     setStatus('streaming');
 
-    // Create AbortController
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     try {
+      const messagesForApi = isAction ? messages : [...messages, userMessage];
+      const requestData: Record<string, unknown> = isAction
+        ? {
+            messages: messagesForApi.map(m => ({ id: m.id, role: m.role, parts: m.parts || [{ type: 'text', text: m.content }] })),
+            userAction: JSON.parse(message.text)
+          }
+        : {
+            messages: messagesForApi.map(m => ({ id: m.id, role: m.role, parts: m.parts || [{ type: 'text', text: m.content }] }))
+          };
+
+      console.log('📥 前端提交给接口的JSON数据:');
+      console.log(JSON.stringify(requestData, null, 2));
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map(msg => ({
-            id: msg.id,
-            role: msg.role,
-            parts: msg.parts || [{ type: 'text', text: msg.content }]
-          }))
-        }),
+        body: JSON.stringify(requestData),
         signal: abortController.signal
       });
 
@@ -144,6 +161,9 @@ export function useCustomChat(): UseCustomChatReturn {
               // Even if text is empty, it indicates stream has ended
               if (data.text) {
                 accumulatedText = data.text;
+                // 打印AI返回给前端的JSON数据
+                console.log('📤 AI返回给前端的JSON数据:');
+                console.log(accumulatedText);
               }
               setMessages(prev => prev.map(msg => 
                 msg.id === assistantMessageId

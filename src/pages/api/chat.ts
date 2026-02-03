@@ -42,8 +42,34 @@ ${JSON.stringify(a2uiSchema, null, 2)}
 6. Component "children" is an array of component IDs (strings), not nested objects
 7. Text component uses "text" and "variant" (h1, h2, h3, h4, h5, body, caption)
 8. Row/Column use "justify" and "align" properties (not "justifyContent", "alignItems")
-9. Button uses "action" object, not "actions" array
-10. One component MUST have id="root"
+9. One component MUST have id="root"
+
+## BUTTON ACTION RULES (A2UI v0.9 Standard):
+Button actions have TWO types - use the correct one:
+
+1. **For opening external URLs** (Visit Website, Go to Link, Open URL):
+   Use "functionCall" with "openUrl" - this runs on client, no server round-trip:
+   \`\`\`json
+   "action": {
+     "functionCall": {
+       "call": "openUrl",
+       "args": { "url": "https://example.com" }
+     }
+   }
+   \`\`\`
+
+2. **For showing details/next level content** (View Details, Learn More, Show Info):
+   Use "event" - this sends to server, AI generates new UI:
+   \`\`\`json
+   "action": {
+     "event": {
+       "name": "viewDetails",
+       "context": { "itemId": "123", "title": "Item Name" }
+     }
+   }
+   \`\`\`
+
+NEVER use the old format: \`"action": { "name": "...", "context": {...} }\` - this is WRONG!
 
 ## COMPONENT USAGE GUIDELINES:
 - Use Card component to group related content (images, text, buttons) together. Cards provide visual separation and structure.
@@ -104,8 +130,20 @@ const isUIRequest = (messageText: string): boolean => {
     return true;
   }
   
-  // Check if message is a pure A2UI Action JSON (client_to_server.json format)
-  // Format: { "action": { "name": "...", "surfaceId": "...", "sourceComponentId": "...", "timestamp": "...", "context": {...} } }
+  // Check if message is A2UI v0.9 userAction JSON
+  // Format: { "userAction": { "name": "...", "surfaceId": "...", "sourceComponentId": "...", "timestamp": "...", "context": {...} } }
+  if (messageText.trim().startsWith('{') && messageText.includes('"userAction"')) {
+    try {
+      const parsed = JSON.parse(messageText.trim());
+      if (parsed.userAction && parsed.userAction.name && parsed.userAction.surfaceId) {
+        return true;
+      }
+    } catch (e) {
+      // Not valid JSON, continue checking
+    }
+  }
+  
+  // Legacy format support: { "action": { ... } }
   if (messageText.trim().startsWith('{') && messageText.includes('"action"')) {
     try {
       const parsed = JSON.parse(messageText.trim());
@@ -114,22 +152,6 @@ const isUIRequest = (messageText: string): boolean => {
       }
     } catch (e) {
       // Not valid JSON, continue checking
-    }
-  }
-  
-  // Also check for legacy format with "A2UI Action:" prefix (backward compatibility)
-  if (messageText.includes('A2UI Action:') || messageText.includes('"action"')) {
-    try {
-      // Try to extract and parse A2UI Action JSON
-      const actionMatch = messageText.match(/A2UI Action:\s*(\{[\s\S]*\})/);
-      if (actionMatch) {
-        const actionJson = JSON.parse(actionMatch[1]);
-        if (actionJson.action && actionJson.action.name) {
-          return true;
-        }
-      }
-    } catch (e) {
-      // If parsing fails, continue checking
     }
   }
   
@@ -254,19 +276,22 @@ export const POST: APIRoute = async ({ request }) => {
   const corsHeaders = getCORSHeaders(origin);
   
   try {
-    const { messages }: { messages: UIMessage[] } = await request.json();
+    const requestBody = await request.json();
+    const messages: UIMessage[] = requestBody.messages ?? [];
+    const userAction = requestBody.userAction ?? null;
 
-    // Convert message format
-    const modelMessages = await convertToModelMessages(messages);
+    console.log('📥 前端提交给接口的JSON数据:');
+    console.log(JSON.stringify(requestBody, null, 2));
 
-    // Get last user message
+    // A2UI-style: when client sends userAction (e.g. Details click), we do not use full history as "current" message
+    const modelMessages = messages.length ? await convertToModelMessages(messages) : [];
     const lastMessage = messages[messages.length - 1];
     const lastMessageText = lastMessage?.parts
       ?.filter((part: any) => part.type === 'text')
       ?.map((part: any) => part.text)
       ?.join('') || '';
-    
-    const isUI = isUIRequest(lastMessageText);
+
+    const isUI = userAction ? true : isUIRequest(lastMessageText);
 
     // Try multiple ways to get API key (support different deployment environments)
     const apiKey = process.env.GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
@@ -300,59 +325,43 @@ export const POST: APIRoute = async ({ request }) => {
     const apiMessages: any[] = [];
     
     if (isUI) {
-      // UI request: Use Function Calling (exactly like A2UI)
       const a2uiSchema = getA2UISchema();
-      const systemPrompt = createA2UISystemPrompt(a2uiSchema);
-      
-      // Add history messages
-      modelMessages.slice(0, -1).forEach((msg: any) => {
-        // Handle all possible role values: 'user', 'assistant', 'model', 'system'
-        if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
-          let msgContent = '';
-          if (typeof msg.content === 'string') {
-            msgContent = msg.content;
-          } else if (Array.isArray(msg.content)) {
-            const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
-            msgContent = textPart?.text || '';
-          }
-          
-          // Skip A2UI JSON responses - they are for UI rendering, not conversation history
-          if (msgContent && isA2UIJSON(msgContent)) {
-            return; // Skip this message
-          }
-          
-          if (msgContent) {
-            // Google Gemini API only accepts 'user' or 'model', not 'assistant'
-            const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
-            apiMessages.push({
-              role: geminiRole,
-              parts: [{ text: msgContent }]
-            });
-          }
-        } else {
-          console.warn(`⚠️ Skipping message with unknown role: ${msg.role}`);
-        }
-      });
+      let systemPrompt = createA2UISystemPrompt(a2uiSchema);
 
-      // Add current user message
-      const currentUserMsg = modelMessages[modelMessages.length - 1];
-      if (currentUserMsg && currentUserMsg.role === 'user') {
-        let userContent = '';
-        if (typeof currentUserMsg.content === 'string') {
-          userContent = currentUserMsg.content;
-        } else if (Array.isArray(currentUserMsg.content)) {
-          const textPart = currentUserMsg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
-          userContent = textPart?.text || '';
-        }
-        
-        // Extract A2UI Action if present (pure JSON format or legacy format)
-        // Action is already validated in isUIRequest, no need to log here
-        
-        if (userContent) {
-          apiMessages.push({
-            role: 'user',
-            parts: [{ text: userContent }]
-          });
+      if (userAction) {
+        // A2UI-style: request is only the userAction; model must return updateComponents for detail view
+        const { name, surfaceId, context } = userAction;
+        const actionPrompt = `The user clicked a button. userAction: name="${name}", surfaceId="${surfaceId}". context: ${JSON.stringify(context || {})}.
+
+You MUST respond with an A2UI JSON array of two messages: (1) createSurface with surfaceId "${surfaceId}" and catalogId "standard-catalog", (2) updateComponents for surfaceId "${surfaceId}" with a DETAIL VIEW ONLY: one root Column containing one Card with the full description text from context (use context.description or context.fullDescription or context.full_description) and a Button "Back" or "Close". Do NOT return the full list. The components array must have id "root" and only the detail content.`;
+        systemPrompt += `\n\n## When the request is a button action (viewDetails, showFullDescription, etc.):\n${actionPrompt}`;
+        apiMessages.push({ role: 'user', parts: [{ text: actionPrompt }] });
+      } else {
+        // Normal UI request: add history (skip A2UI JSON), then current user message
+        modelMessages.slice(0, -1).forEach((msg: any) => {
+          if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
+            let msgContent = '';
+            if (typeof msg.content === 'string') msgContent = msg.content;
+            else if (Array.isArray(msg.content)) {
+              const textPart = msg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
+              msgContent = textPart?.text || '';
+            }
+            if (msgContent && isA2UIJSON(msgContent)) return;
+            if (msgContent) {
+              const geminiRole = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
+              apiMessages.push({ role: geminiRole, parts: [{ text: msgContent }] });
+            }
+          }
+        });
+        const currentUserMsg = modelMessages[modelMessages.length - 1];
+        if (currentUserMsg?.role === 'user') {
+          let userContent = '';
+          if (typeof currentUserMsg.content === 'string') userContent = currentUserMsg.content;
+          else if (Array.isArray(currentUserMsg.content)) {
+            const textPart = currentUserMsg.content.find((part: any) => part.type === 'text') as { type: 'text'; text: string } | undefined;
+            userContent = textPart?.text || '';
+          }
+          if (userContent) apiMessages.push({ role: 'user', parts: [{ text: userContent }] });
         }
       }
 
@@ -388,7 +397,7 @@ export const POST: APIRoute = async ({ request }) => {
 
       // Call Gemini API (exactly like A2UI)
       const model = genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash-lite',
         contents: apiMessages,
         config: {
           systemInstruction: systemPrompt,
@@ -419,6 +428,10 @@ export const POST: APIRoute = async ({ request }) => {
                 const a2uiMessages = validateA2UIJSON(String(a2uiJsonStr), a2uiSchema);
                 const finalContent = JSON.stringify(a2uiMessages);
           
+          // 打印AI返回给前端的JSON数据
+          console.log('📤 AI返回给前端的JSON数据 (A2UI):');
+          console.log(JSON.stringify(a2uiMessages, null, 2));
+          
           // Return as AI SDK format
           return new Response(
             `0:${JSON.stringify({ type: 'text', text: finalContent })}\n`,
@@ -437,6 +450,10 @@ export const POST: APIRoute = async ({ request }) => {
         ?.filter((part: any) => part.text)
         ?.map((part: any) => part.text)
         ?.join('') || '';
+
+      // 打印AI返回给前端的文本数据
+      console.log('📤 AI返回给前端的数据 (文本):');
+      console.log(textContent);
 
       return new Response(
         `0:${JSON.stringify({ type: 'text', text: textContent })}\n`,
@@ -487,7 +504,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
 
       const model = genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash-lite',
         contents: apiMessages,
         config: {
           temperature: 0.7,
@@ -504,6 +521,10 @@ export const POST: APIRoute = async ({ request }) => {
         ?.filter((part: any) => part.text)
         ?.map((part: any) => part.text)
         ?.join('') || '';
+
+      // 打印AI返回给前端的数据 (非UI请求)
+      console.log('📤 AI返回给前端的数据 (普通对话):');
+      console.log(textContent);
 
       return new Response(
         `0:${JSON.stringify({ type: 'text', text: textContent })}\n`,

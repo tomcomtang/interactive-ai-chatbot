@@ -5,7 +5,7 @@ import type { ChatMessage, ChatStatus } from './useCustomChat';
 interface ChatMessagesProps {
   messages: ChatMessage[];
   status: ChatStatus;
-  onSendMessage?: (message: { text: string }) => Promise<void>;
+  onSendMessage?: (message: { text: string; isAction?: boolean }) => Promise<void>;
 }
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMessage }) => {
@@ -97,7 +97,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, status, onSendMes
 const MessageContent: React.FC<{
   message: ChatMessage;
   isStreaming: boolean;
-  onSendMessage?: (message: { text: string }) => Promise<void>;
+  onSendMessage?: (message: { text: string; isAction?: boolean }) => Promise<void>;
 }> = ({ message, isStreaming, onSendMessage }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<A2UIRenderer | null>(null);
@@ -289,26 +289,25 @@ const MessageContent: React.FC<{
     }
   };
 
-  // Handle button actions
-  // According to A2UI v0.9 spec, action should be sent in client_to_server.json format
+  // Handle button actions (A2UI v0.9 standard)
+  // Client-side actions (functionCall) are handled in button.ts
+  // Server-side actions (userAction/event) are sent to AI here
   const handleAction = useCallback((a2uiActionMessage: any) => {
+    // A2UI v0.9 standard format: { userAction: { name, surfaceId, sourceComponentId, timestamp, context } }
+    if (!a2uiActionMessage.userAction) {
+      console.warn('⚠️ Invalid A2UI action message format - expected userAction');
+      return;
+    }
+
+    // Send userAction to AI for processing
     if (!onSendMessage) {
       console.warn('⚠️ onSendMessage not available, action will be ignored');
       return;
     }
 
-    // A2UI v0.9 standard format: { action: { name, surfaceId, sourceComponentId, timestamp, context } }
-    // Send the action in pure A2UI JSON format (client_to_server.json standard)
-    if (!a2uiActionMessage.action) {
-      console.warn('⚠️ Invalid A2UI action message format');
-      return;
-    }
+    console.log('📤 Sending userAction to AI (no user message in list, A2UI-style):', a2uiActionMessage);
 
-    // Send the A2UI action message as pure JSON string (A2UI v0.9 standard)
-    // This matches the client_to_server.json format exactly
-    const messageText = JSON.stringify(a2uiActionMessage);
-
-    onSendMessage({ text: messageText }).catch(error => {
+    onSendMessage({ text: JSON.stringify(a2uiActionMessage), isAction: true }).catch(error => {
       console.error('❌ Failed to send action message:', error);
     });
   }, [onSendMessage]);

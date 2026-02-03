@@ -1,48 +1,38 @@
 /**
  * Layout Components Creator (Row, Column, List)
+ * Semantics match A2UI: alignment = cross axis (align-items), distribution = main axis (justify-content)
+ * Ref: A2UI renderers/lit row.ts, column.ts; renderers/angular catalog/row.ts, column.ts
  */
+
+const ALIGNMENT_MAP: Record<string, string> = {
+  start: 'align-start',
+  center: 'align-center',
+  end: 'align-end',
+  stretch: 'align-stretch',
+};
+
+const DISTRIBUTION_MAP: Record<string, string> = {
+  start: 'distribute-start',
+  center: 'distribute-center',
+  end: 'distribute-end',
+  spaceBetween: 'distribute-spaceBetween',
+  spaceAround: 'distribute-spaceAround',
+  spaceEvenly: 'distribute-spaceEvenly',
+};
 
 export function createRowElement(id: string, properties: any): HTMLElement {
   const element = document.createElement('div');
   element.className = 'a2ui-row';
   element.setAttribute('data-component-id', id);
 
-  // UI v0.9 Row 使用 justify / align
-  if (properties.justify) {
-    const justify = properties.justify as string;
-    const justifyClassMap: Record<string, string> = {
-      start: 'align-start',
-      center: 'align-center',
-      end: 'align-end',
-      spaceBetween: 'align-spaceBetween',
-      spaceAround: 'align-spaceAround',
-      spaceEvenly: 'align-spaceAround',
-      stretch: 'align-start',
-    };
-    const cls = justifyClassMap[justify];
-    if (cls) {
-      element.classList.add(cls);
-    }
-  }
+  // alignment = cross axis (align-items). A2UI default "stretch"
+  const alignment = (properties.align ?? properties.alignment ?? 'stretch') as string;
+  element.classList.add(ALIGNMENT_MAP[alignment] ?? 'align-stretch');
 
-  if (properties.align) {
-    const align = properties.align as string;
-    const alignClassMap: Record<string, string> = {
-      start: 'align-start',
-      center: 'align-center',
-      end: 'align-end',
-      stretch: 'align-start',
-    };
-    const cls = alignClassMap[align];
-    if (cls) {
-      element.classList.add(cls);
-    }
-  }
-
-  // 保留自定义 alignment 字段的向后兼容
-  if (properties.alignment) {
-    element.classList.add(`align-${properties.alignment}`);
-  }
+  // distribution = main axis (justify-content). A2UI default "start"
+  const distribution = (properties.justify ?? properties.distribution ?? 'start') as string;
+  const distClass = DISTRIBUTION_MAP[distribution];
+  if (distClass) element.classList.add(distClass);
 
   return element;
 }
@@ -52,42 +42,12 @@ export function createColumnElement(id: string, properties: any): HTMLElement {
   element.className = 'a2ui-column';
   element.setAttribute('data-component-id', id);
 
-  // UI v0.9 Column 同样使用 justify / align
-  if (properties.justify) {
-    const justify = properties.justify as string;
-    const justifyClassMap: Record<string, string> = {
-      start: 'align-start',
-      center: 'align-center',
-      end: 'align-end',
-      spaceBetween: 'align-spaceBetween',
-      spaceAround: 'align-spaceAround',
-      spaceEvenly: 'align-spaceAround',
-      stretch: 'align-start',
-    };
-    const cls = justifyClassMap[justify];
-    if (cls) {
-      element.classList.add(cls);
-    }
-  }
+  const alignment = (properties.align ?? properties.alignment ?? 'stretch') as string;
+  element.classList.add(ALIGNMENT_MAP[alignment] ?? 'align-stretch');
 
-  if (properties.align) {
-    const align = properties.align as string;
-    const alignClassMap: Record<string, string> = {
-      start: 'align-start',
-      center: 'align-center',
-      end: 'align-end',
-      stretch: 'align-start',
-    };
-    const cls = alignClassMap[align];
-    if (cls) {
-      element.classList.add(cls);
-    }
-  }
-
-  // 保留旧的 alignment 字段
-  if (properties.alignment) {
-    element.classList.add(`align-${properties.alignment}`);
-  }
+  const distribution = (properties.justify ?? properties.distribution ?? 'start') as string;
+  const distClass = DISTRIBUTION_MAP[distribution];
+  if (distClass) element.classList.add(distClass);
 
   return element;
 }

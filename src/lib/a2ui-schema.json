@@ -314,19 +314,44 @@
               },
               "action": {
                 "type": "object",
-                "description": "The action to trigger when button is clicked. Use action.name='navigate' or 'viewDetails' for navigation actions. The action.context can contain additional data like item ID, title, etc. For 'View Details' or 'Learn More' buttons, use action.name='navigate' with context containing the item information.",
+                "description": "The action to trigger when button is clicked. Use ONE of: 1) 'event' for server-side actions (AI will generate new UI), 2) 'functionCall' for client-side actions like opening URLs.",
                 "properties": {
-                  "name": { 
-                    "type": "string",
-                    "description": "Action name. Common values: 'navigate' (for going to next level/details), 'viewDetails', 'learnMore', 'submit', etc. Use 'navigate' when the button should show more information or go to a detail page."
-                  },
-                  "context": {
+                  "event": {
                     "type": "object",
-                    "description": "Additional context data for the action. For navigation actions, include relevant information like item ID, title, description, etc. that will be sent to the AI to generate the next level content.",
-                    "additionalProperties": true
+                    "description": "Server event - sent to AI to generate new UI response. Use for 'View Details', 'Learn More', drill-down actions.",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Event name like 'viewDetails', 'learnMore', 'showMore', 'selectItem'"
+                      },
+                      "context": {
+                        "type": "object",
+                        "description": "Context data to send to AI, like itemId, title, etc.",
+                        "additionalProperties": true
+                      }
+                    },
+                    "required": ["name"]
+                  },
+                  "functionCall": {
+                    "type": "object",
+                    "description": "Client-side function call - executed locally without server round-trip. Use for opening URLs, copying text, etc.",
+                    "properties": {
+                      "call": {
+                        "type": "string",
+                        "enum": ["openUrl"],
+                        "description": "Function name. 'openUrl' opens the URL in a new browser tab."
+                      },
+                      "args": {
+                        "type": "object",
+                        "description": "Function arguments. For 'openUrl', must include 'url' property.",
+                        "properties": {
+                          "url": { "type": "string", "description": "The URL to open" }
+                        }
+                      }
+                    },
+                    "required": ["call", "args"]
                   }
-                },
-                "required": ["name"]
+                }
               }
             },
             "required": ["children", "action"]

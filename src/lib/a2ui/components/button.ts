@@ -42,78 +42,103 @@ export function createButtonElement(
     }
   });
 
-  // Handle action
+  // Handle action (A2UI v0.9 standard)
   if (properties.action) {
     element.addEventListener('click', () => {
-      // Merge item data from List binding into action context if available
-      const listItemDataStr = element.dataset.listItemData;
-      let finalAction = { ...properties.action };
+      const action = properties.action;
       
-      if (listItemDataStr) {
-        try {
-          const listItemData = JSON.parse(listItemDataStr);
-          console.log('📦 Found List item data for button:', listItemData);
-          
-          // Merge item data into action context
-          // If context already exists, merge item data into it
-          // Otherwise, use item data as context
-          if (finalAction.context) {
-            finalAction.context = {
-              ...listItemData,
-              ...finalAction.context, // Action context takes precedence
-            };
-          } else {
-            finalAction.context = listItemData;
-          }
-          
-          console.log('🔘 Final action with merged context:', finalAction);
-        } catch (error) {
-          console.error('❌ Failed to parse list item data:', error);
+      // A2UI v0.9: Check for functionCall (client-side action)
+      if (action.functionCall) {
+        const { call, args } = action.functionCall;
+        console.log('🔧 Client-side functionCall:', call, args);
+        
+        // Handle openUrl function - opens URL in new tab
+        if (call === 'openUrl' && args?.url) {
+          console.log('🔗 Opening URL:', args.url);
+          window.open(args.url, '_blank');
+          return;
         }
+        
+        console.warn('⚠️ Unknown functionCall:', call);
+        return;
       }
       
-      // Build A2UI v0.9 standard action format (client_to_server.json)
-      // Find surfaceId from the element's closest surface ancestor
-      const surfaceElement = element.closest('[data-surface-id]');
-      const resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
-      const sourceComponentId = id;
-      const timestamp = new Date().toISOString();
-      
-      // Resolve action context - convert all path references to actual values
-      // According to A2UI v0.9 spec, context values are DynamicValue:
-      // - string, number, boolean (direct literals)
-      // - {path: string} (data binding)
-      // - FunctionCall (not supported yet)
-      const resolvedContext: any = {};
-      if (finalAction.context) {
-        for (const [key, value] of Object.entries(finalAction.context)) {
-          // If value is an object with path property, resolve it from data model
+      // A2UI v0.9: Check for event (server-side action)
+      if (action.event) {
+        const surfaceElement = element.closest('[data-surface-id]');
+        const resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
+        const sourceComponentId = id;
+        const timestamp = new Date().toISOString();
+        
+        // Merge item data from List binding into event context if available
+        const listItemDataStr = element.dataset.listItemData;
+        let eventContext = { ...(action.event.context || {}) };
+        
+        if (listItemDataStr) {
+          try {
+            const listItemData = JSON.parse(listItemDataStr);
+            console.log('📦 Found List item data for button:', listItemData);
+            eventContext = { ...listItemData, ...eventContext };
+          } catch (error) {
+            console.error('❌ Failed to parse list item data:', error);
+          }
+        }
+        
+        // Resolve context - convert path references to actual values
+        const resolvedContext: any = {};
+        for (const [key, value] of Object.entries(eventContext)) {
           if (value && typeof value === 'object' && !Array.isArray(value) && 'path' in value && propertyResolver && resolvedSurfaceId) {
-            // Resolve path binding: {path: "/some/path"} -> actual value from data model
             resolvedContext[key] = propertyResolver.resolveValue(value, resolvedSurfaceId);
             console.log(`🔗 Resolved context[${key}] from path ${(value as any).path}:`, resolvedContext[key]);
           } else {
-            // Direct literal value (string, number, boolean) or already resolved value
             resolvedContext[key] = value;
           }
         }
+        
+        // Create A2UI v0.9 standard userAction message
+        const a2uiActionMessage = {
+          userAction: {
+            name: action.event.name,
+            surfaceId: resolvedSurfaceId,
+            sourceComponentId: sourceComponentId,
+            timestamp: timestamp,
+            context: resolvedContext
+          }
+        };
+        
+        console.log('📤 A2UI v0.9 userAction message:', JSON.stringify(a2uiActionMessage, null, 2));
+        handleAction(a2uiActionMessage);
+        return;
       }
       
-      // Create A2UI standard action message (client_to_server.json format)
-      const a2uiActionMessage = {
-        action: {
-          name: finalAction.name,
-          surfaceId: resolvedSurfaceId,
-          sourceComponentId: sourceComponentId,
-          timestamp: timestamp,
-          context: resolvedContext
+      // Legacy format support: action.name (old format, for backward compatibility)
+      if (action.name) {
+        console.warn('⚠️ Using legacy action format. Please migrate to action.event or action.functionCall');
+        
+        // Check if it looks like an openUrl action
+        if ((action.name === 'navigate' || action.name === 'openUrl') && action.context?.url) {
+          console.log('🔗 Legacy navigate - Opening URL:', action.context.url);
+          window.open(action.context.url, '_blank');
+          return;
         }
-      };
-      
-      console.log('📤 A2UI standard action message:', JSON.stringify(a2uiActionMessage, null, 2));
-      
-      // Pass the standard A2UI action message to handler
-      handleAction(a2uiActionMessage);
+        
+        // Otherwise, treat as server event
+        const surfaceElement = element.closest('[data-surface-id]');
+        const resolvedSurfaceId = surfaceId || surfaceElement?.getAttribute('data-surface-id') || 'main';
+        
+        const a2uiActionMessage = {
+          userAction: {
+            name: action.name,
+            surfaceId: resolvedSurfaceId,
+            sourceComponentId: id,
+            timestamp: new Date().toISOString(),
+            context: action.context || {}
+          }
+        };
+        
+        console.log('📤 Legacy action converted to userAction:', JSON.stringify(a2uiActionMessage, null, 2));
+        handleAction(a2uiActionMessage);
+      }
     });
   }
 
